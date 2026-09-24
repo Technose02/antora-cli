@@ -1,6 +1,6 @@
-use crate::tasks::init::assistant::InitAssistantResults;
 use antora_fs::Resource;
 use antora_project::component_version::ComponentVersion;
+use init_template::InitAssistantResults;
 use relative_path::RelativeFile;
 
 // scaffolding/pages/index.adoc

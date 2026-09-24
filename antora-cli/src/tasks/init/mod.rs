@@ -4,16 +4,9 @@ use antora_process::{
     git::{RepoConstellationForPath, init_and_commit_adding_all},
 };
 use antora_project::{antora_secrets::AntoraSecrets, component_version::ComponentVersion};
+use init_template::InitArgs;
 use relative_path::RelativeFile;
 use std::{path::Path, process::exit};
-
-mod template;
-use template::Templates;
-
-mod assistant;
-use assistant::{InitAssistant, InitAssistantResults};
-
-use super::InitArgs;
 
 fn validate_project_init_dir_or_exit(project_init_dir: Option<&String>) -> ProjectInitDir {
     let project_init_dir = project_init_dir

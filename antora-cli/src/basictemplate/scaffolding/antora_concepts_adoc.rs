@@ -1,7 +1,6 @@
 use antora_fs::Resource;
+use init_template::InitAssistantResults;
 use relative_path::RelativeFile;
-
-use crate::tasks::init::assistant::InitAssistantResults;
 
 // scaffolding/pages/antora-concepts.adoc
 pub fn relative_file() -> RelativeFile {

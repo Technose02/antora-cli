@@ -3,10 +3,9 @@ use antora_project::antora_playbook::AntoraPlaybook;
 use std::fmt::Display;
 
 mod confluence;
-mod init;
+//mod init;
 mod site;
 pub use confluence::run as run_confluence;
-pub use init::run as run_init;
 pub use site::run as run_site;
 
 #[derive(Default, Clone)]
@@ -52,18 +51,6 @@ impl From<&str> for AntoraLogLevel {
             }
         }
     }
-}
-
-pub struct InitArgs<'cli> {
-    pub(crate) project_dir: Option<&'cli String>,
-    pub(crate) non_interactive_flag: bool,
-    pub(crate) include_scaffolding: bool,
-    pub(crate) provided_docs_dir: Option<&'cli String>,
-    pub(crate) provided_component_name: Option<&'cli String>,
-    pub(crate) provided_component_title: Option<&'cli String>,
-    pub(crate) provided_component_version: Option<&'cli String>,
-    pub(crate) provided_playbook_site_title: Option<&'cli String>,
-    pub(crate) export_pdf: bool,
 }
 
 pub struct SiteArgs<'cli> {

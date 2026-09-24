@@ -5,10 +5,11 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4.5.51", features = ["derive"] }
+regex = { workspace = true }
+webbrowser = "1.0.6"
+xml = "1.2.0"
 antora-project = { path = "../antora-project" }
 antora-fs = { path = "../antora-fs" }
 antora-process = { path = "../antora-process" }
 relative-path = { path = "../relative-path" }
-regex = "1.12.2"
-webbrowser = "1.0.6"
-xml = "1.2.0"
+init-template = { path = "../init-template" }

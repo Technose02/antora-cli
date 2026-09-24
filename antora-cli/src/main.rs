@@ -1,5 +1,6 @@
-use antora_cli::run_cli;
+use antora_cli::{DefaultTemplateResolver, run_cli};
 
 fn main() {
-    run_cli!()
+    let template_resolver = Box::new(DefaultTemplateResolver);
+    run_cli!(template_resolver)
 }

@@ -1,6 +1,5 @@
-use crate::model::{
-    component_name::ComponentName, component_version::ComponentVersion, resource_id::ResourceId,
-};
+pub use crate::model::component_version::ComponentVersion;
+use crate::model::{component_name::ComponentName, resource_id::ResourceId};
 use relative_path::RelativeFile;
 use serde::{Deserialize, Serialize};
 use serde_yaml_bw::to_string as to_yaml;

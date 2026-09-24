@@ -1,12 +1,13 @@
 use std::{borrow::Borrow, ffi::OsString};
 
-use crate::tasks::{ConfluenceArgs, InitArgs, SiteArgs, run_confluence, run_init, run_site};
+use crate::tasks::{ConfluenceArgs, SiteArgs, run_confluence, run_site};
 use clap::Parser;
+use init_template::{InitArgs, InitTask, TemplateResolver};
 mod cli;
 
 pub use cli::{CliApp, CliCommands};
 
-pub fn run_cli<I, T>(args_iter: I)
+pub fn run_cli<I, T>(args_iter: I, template_resolver: Box<dyn TemplateResolver>)
 where
     I: IntoIterator<Item = T>,
     T: Into<OsString> + Clone,
@@ -23,18 +24,23 @@ where
             component_title,
             component_version,
             playbook_site_title,
+            template_key,
             export_pdf,
-        } => run_init(InitArgs {
-            project_dir,
-            non_interactive_flag: *non_interactive,
-            include_scaffolding: *scaffolding,
-            provided_docs_dir: content_source_root.as_ref(),
-            provided_component_name: component_name.as_ref(),
-            provided_component_title: component_title.as_ref(),
-            provided_component_version: component_version.as_ref(),
-            provided_playbook_site_title: playbook_site_title.as_ref(),
-            export_pdf: *export_pdf,
-        }),
+        } => InitTask::run(
+            InitArgs {
+                project_dir,
+                non_interactive_flag: *non_interactive,
+                include_scaffolding: *scaffolding,
+                provided_docs_dir: content_source_root.as_ref(),
+                provided_component_name: component_name.as_ref(),
+                provided_component_title: component_title.as_ref(),
+                provided_component_version: component_version.as_ref(),
+                provided_playbook_site_title: playbook_site_title.as_ref(),
+                template_key: template_key.as_ref(),
+                export_pdf: *export_pdf,
+            },
+            template_resolver,
+        ),
         CliCommands::Site {
             playbook,
             fetch,

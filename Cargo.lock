@@ -69,6 +69,7 @@ dependencies = [
  "antora-process",
  "antora-project",
  "clap",
+ "init-template",
  "regex",
  "relative-path",
  "webbrowser",
@@ -385,6 +386,16 @@ checksum = "4b0f83760fb341a774ed326568e19f5a863af4a952def8c39f9ab92fd95b88e5"
 dependencies = [
  "equivalent",
  "hashbrown 0.16.0",
+]
+
+[[package]]
+name = "init-template"
+version = "0.1.0"
+dependencies = [
+ "antora-fs",
+ "antora-process",
+ "antora-project",
+ "relative-path",
 ]
 
 [[package]]

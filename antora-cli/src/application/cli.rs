@@ -51,6 +51,10 @@ pub enum CliCommands {
         #[arg(long, value_name = "SITE-TITLE")]
         playbook_site_title: Option<String>,
 
+        /// the key of the template to use for initialization
+        #[arg(long, value_name = "TEMPLATE-KEY")]
+        template_key: Option<String>,
+
         /// set to add pdf-export to your project (will add the extension to the playbook and create a default config-file)
         #[arg(short = 'p', long, value_name = "FLAG")]
         export_pdf: bool,

@@ -1,5 +1,5 @@
-use super::{InitAssistantResults, Template, Vfs};
-use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR};
+use super::{InitAssistantResults, Template};
+use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR, ANTORA_SECRETS_CONFIGURATION, Vfs};
 use antora_project::{
     antora_configuration::{AntoraConfiguration, ImageConfig, PlaybookConfig},
     antora_playbook::{
@@ -196,6 +196,18 @@ impl Basic {
 }
 
 impl Template for Basic {
+    fn get_gitignore_content(&self) -> String {
+        format!(
+            r#"
+# rules for antora
+/**/.venv
+{ANTORA_CACHE_DIR}/
+{ANTORA_BUILD_DIR}/
+{ANTORA_SECRETS_CONFIGURATION}
+"#,
+        )
+    }
+
     fn process(&mut self, vfs: &Vfs, pdf_target: bool) {
         // create start_path for content
         let mut content_source_start_path =
