@@ -1,0 +1,3 @@
+[workspace]
+resolver = "3"
+members = ["antora-cli", "antora-fs", "antora-process", "antora-project", "relative-path"]

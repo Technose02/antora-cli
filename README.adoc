@@ -1,0 +1,371 @@
+= Antora-CLI
+
+Ein kommandozeilen-gesteuertes Werkzeug zum Initialisieren, Bauen und
+Veröffentlichen von Antora-Dokumentationsprojekten. Es kapselt die
+Antora-Toolchain in einem Container-Image und benötigt daher weder eine lokale
+Node.js- noch eine Maven-Installation. Alle Antora-Konzepte werden als
+typsichere Rust-Modelle abgebildet; Serialisierung und Persistierung sind
+Derivate dieser Modelle ("Model-First").
+
+[IMPORTANT]
+Dieses Projekt befindet sich im Aufbau. Die Kernflüsse (`init`, `site`,
+`confluence`) sind funktionsfähig; Dokumentation, Testabdeckung und
+Fehlerbehandlung sind ausbaufähig (siehe <<_roadmap>> und
+<<_refaktorierungsplan>>).
+
+== Architektur
+
+Der Workspace (Resolver 3, Edition 2024) trennt Domäne, Infrastruktur und
+Anwendung in fünf Crates:
+
+[cols="1,1,3", options="header"]
+|===
+| Crate | Schicht | Verantwortlichkeit
+
+| `relative-path`
+| Primitive
+| Typsystem für relative Pfade (`RelativeFile`, `RelativeDir`, `Dirname`,
+  `Filename`). Ersetzt Stringly-typed Pfade durch validierte Werte.
+
+| `antora-project`
+| Domäne
+| Typsichere Modelle: `AntoraPlaybook` (YAML via `serde_yaml_bw`),
+  `AntoraConfiguration` (TOML), `ComponentVersionDescriptor` (= `antora.yml`),
+  `AntoraSecrets`, `ResourceId`, `Families`, `ComponentName`/`Version`,
+  `ExtensionConfig`.
+
+| `antora-fs`
+| Infrastruktur
+| Virtuelles Dateisystem (`Vfs`), `ProjectInitDir`,
+  Pfad-Normalisierung (`NormalizePath`).
+
+| `antora-process`
+| Infrastruktur
+| `ProcessBuilder` mit `LineProcessor` (Thread-Piping für stdout/stderr),
+  symmetrische Docker-/Podman-Adapter, Git-Wrapper.
+
+| `antora-cli`
+| Anwendung
+| clap-CLI, `InitAssistant` (interaktiver Dialog), `Templates`,
+  `PomXmlTemplate` für Confluence-Maven.
+|===
+
+Abhängigkeitsrichtung: `application -> domain`, `application -> infrastructure`,
+`infrastructure -> domain`. Die Domäne (`antora-project`) hängt nicht von der
+Infrastruktur ab.
+
+== Befehle
+
+=== `init`
+
+Initialisiert ein neues Antora-Projekt im Projektverzeichnis (Default:
+aktuelles Verzeichnis).
+
+Ablauf:
+
+. Validierung des Projektverzeichnisses (abbrechen bei bestehender
+  `antora.toml` oder Default-Playbook).
+. Prüfung der Git-Konstellation: `NoRepo`, `RepoAndRoot` (Branch `main`/`master`)
+  oder `RepoButNotRoot` (letzteres führt zum Abbruch).
+. Aufbau aller zu erzeugenden Dateien in einem *virtuellen Dateisystem* (Dry-Run).
+. Konfliktprüfung gegen das echte Dateisystem.
+. Atomares Persistieren nur bei Konfliktfreiheit.
+. Ggf. `git init` + Initial-Commit (`add -A`).
+
+Wichtige Flags: `-n` (nicht-interaktiv), `-s` (Scaffolding-Inhalte),
+`-c`/`-t`/`-v` (Component-Name/-Titel/-Version), `-p` (PDF-Export).
+
+=== `site`
+
+Baut die Site aus dem in `antora.toml` referenzierten Playbook mittels des
+Antora-Container-Images.
+
+Ablauf:
+
+. Lesen von `antora.toml` (Fallback auf Defaults) und `antora-secrets.toml`.
+. Validieren des Playbooks (Default-Dateiname `antora-playbook.yml`).
+. Ausführung via Docker; falls nicht verfügbar, Fallback auf Podman
+  (bei Exit-Code 125 automatischer `podman machine start` + Retry).
+. Korrektur der `file:///antora/`-URL in der Ausgabe auf den echten Pfad.
+. Optional `-o`: Öffnen der gebauten Site im Standardbrowser.
+
+=== `confluence`
+
+Veröffentlicht die Site als Confluence-Seiten via Antora-Confluence-Image.
+
+Ablauf:
+
+. Wie `site`, zusätzlich: Lesen der `confluence`-Sektion aus `antora.toml`
+  (Default-Anlage mit Hinweis bei Fehlen).
+. Imperative Generierung eines temporären `confluence-publish.xml` (Maven-POM)
+  aus `ConfluenceConfig` + Asciidoc-Attributen.
+. PAT aus `antora-secrets.toml` als Umgebungsvariable.
+. Aufräumen der Temp-Datei via `Drop`-Guard.
+
+== Kernkonzepte
+
+=== Model-First
+
+Typ-Modelle sind die Source of Truth. `AntoraConfiguration`, `AntoraPlaybook`,
+`ComponentVersionDescriptor` und `AntoraSecrets` sind serde-Strukturen mit
+Roundtrip-fähiger Serialisierung. `ResourceId` bildet den Antora-Resource-
+Identifier (`version@Component:module:family$path`) als geparsten Typ mit fünf
+Detail-Leveln (`RelativeFile` < `Module` < `ComponentName` < `ComponentVersion`)
+ab, inkl. `simplify` für verkürzte Anzeige.
+
+=== Virtuelles Dateisystem (Dry-Run)
+
+Das `Vfs` ist eine `HashMap<PathBuf, (Resource, WriteMode)>` mit den Modi
+`IfNotExist`, `OrOverwrite`, `OrAppend`. Beim `init` werden alle Dateien erst
+virtuell geplant, vor dem Persistieren gegen das echte Dateisystem auf
+Konflikte geprüft und erst dann atomar geschrieben. Das verhindert
+Seiteneffekte und partielle Zustände.
+
+=== Konfiguration vs. Secrets
+
+* `antora.toml` -- Projekt-Konfiguration (Playbook-Dateiname, Antora-Image,
+  Confluence-Sektion). Repository-Level, versioniert.
+* `antora-secrets.toml` -- Credentials (`git-credentials`, `confluence-pat`).
+  Repository-Level, wird in `.gitignore` eingetragen.
+
+=== Drei-Schichten-Domäne
+
+* *Component* -- keine strukturellen Freiheitsgrade; definiert durch Name und
+  Version; identifizierbar als `antora.yml` + `modules/`-Verzeichnis.
+* *Project* -- künstlich, nicht Teil der Antora-Spezifikation; definiert über
+  ein Verzeichnis mit gültiger `antora.toml`; referenziert exakt ein Playbook.
+* *Playbook* -- "Glue" zwischen Project und Components; wird zuletzt erstellt,
+  da es selbst nichts definiert, sondern auf den Gegebenheiten aufsetzt.
+
+== Init-Spezifikation
+
+Die folgenden Regeln spezifizieren das Verhalten von `init`. Sie wurden aus der
+Vorgänger-Dokumentation überführt und beschreiben teilweise den angestrebten
+Soll-Zustand; Abweichungen zum aktuellen Code sind gekennzeichnet.
+
+=== Pflicht- und Optionalangaben
+
+*Pflicht:* Projektpfad, Component-Name, Component-Titel.
+*Optional empfohlen* (im Dialog mit Fallback bei explizitem Skip): abweichender
+Playbook-Titel.
+*Optional per Default* (über CLI-Args setzbar): relativer Pfad der Component
+im Projektverzeichnis (Default `docs`), Component-Version (Default `~`).
+
+=== Konventionen
+
+* Components liegen direkt unter der `content-source-root`.
+* Das Verzeichnis der Component entspricht ihrem Namen (darunter liegen direkt
+  `modules/` und der Component-Version-Descriptor).
+* Minimalstand: triviale `index.adoc` + `nav.adoc` + ein Playbook, das die
+  Component einbindet.
+
+=== Validierung und Fehlerfälle
+
+* Projektverzeichnis muss existieren oder erstellbar sein (aktuelles Verzeichnis
+  und leeres Verzeichnis sind zulässig).
+* Bestehende `antora.toml` im Projektverzeichnis -> Abbruch.
+* Gültige (parsbare) `antora-secrets.toml` wird beibehalten, Fortsetzung.
+* Component unter der `content-source-root`, die exakt der zu erzeugenden
+  entspricht -> Konfliktabbruch.
+* Bestehendes Playbook mit Default-Namen -> Konfliktabbruch (Hinweis auf
+  CLI-Parameter für abweichenden Namen denkbar).
+* Bestehende `.gitignore` wird nicht überschrieben, sondern erweitert
+  (Duplikate in Kauf genommen). Die Anpassung wird durch einen Kommentar
+  zwischen ursprünglichem Ende und neuem Inhalt gekennzeichnet.
+
+=== Virtuelles Dateisystem beim Init
+
+Während der Initialisierung werden Prüfungen gegen das echte Dateisystem
+vorgenommen, aber keine Änderungen. Alle Schritte laufen im `Vfs` (Hashmap mit
+Pfaden als Key, `Resource` als Value). Spätere Schritte haben Vorrang gegenüber
+früheren; Änderungen sind immer möglich. Nach Abschluss des Dry-Run wird
+geprüft, ob die virtuellen Schritte auf dem echten Dateisystem zur Änderung
+bestehender Dateien führen (aufewnige Ausnahmen wie `.gitignore`-Append); bei
+Konflikten wird abgebrochen.
+
+[NOTE]
+Ein lesender Zugriff auf bereits virtuell erzeugte Dateien im weiteren
+Init-Verlauf ("Read-Back") ist im aktuellen Code *nicht* realisiert und als
+Epic 2 (VFS-Härtung) eingeplant.
+
+=== Git-Integration
+
+* Kein Git-Repo (auch nicht Teil eines übergeordneten Repos): am Ende `git
+  init` + Commit auf `main`/`master` mit `add -A` (`.gitignore` inklusive).
+* Andernfalls: kein Repo, kein Commit; Hinweis, dass die erstellten Dateien in
+  dem im Playbook angegebenen Branch versioniert sein müssen, damit Antora sie
+  erfassen kann.
+
+== Designentscheidungen
+
+* *content-source-root-Positionierung:* Aus den Antora-Docs wird nicht
+  eindeutig klar, ob die Component (`modules/` + `antora.yml`) exakt in der
+  `content-source-root` oder nur "darunter irgendwo" liegen muss. Entscheidung:
+  für neue Projekte wird Ersteres empfohlen und fest vorgelegen.
+* *Component-Begriff:* Das Tupel aus `modules/`-Verzeichnis und `antora.yml`
+  (Component-Version-Descriptor) heißt "Component" -- der Descriptor-Name
+  stützt diese Lesart.
+* *Namen-Hoheit:* Die tatsächlichen Verzeichnis- und Dateinamen werden
+  verbindlich nur vom Antora-Project (als Wurzel) über das `Vfs` verwendet.
+  Innerhalb der isolierten Component-Implementierung erfolgt die Benennung
+  intuitiv an den Konventionen, wird aber niemals direkt für die
+  Dateisystem-Repräsentation genutzt.
+
+== Build und Nutzung
+
+[source,shell]
+----
+# Bauen des gesamten Workspace
+cargo build --release
+
+# Initialisieren (interaktiv)
+./target/release/antora-cli init -s
+
+# Initialisieren (nicht-interaktiv, CI-tauglich)
+./target/release/antora-cli init -n -c meine-comp -t "Meine Komponente"
+
+# Site bauen und öffnen
+./target-release/antora-cli site -o
+
+# Nach Confluence veröffentlichen
+./target/release/antora-cli confluence
+----
+
+Voraussetzungen zur Laufzeit: Docker *oder* Podman; Git (nur für `init`).
+
+[_roadmap]
+== Roadmap
+
+Geordnete nächste Schritte, priorisiert nach Nutzen und Abhängigkeit.
+
+. *Fehlerbehandlung vereinheitlichen* -- `exit(1)` und `panic!`/`unwrap` durch
+  eine zentrale Error-Pipeline ersetzen (siehe <<_refaktorierungsplan>>).
+. *Testabdeckung aufbauen* -- VFS-Persist, CLI-Flows, Templates,
+  Pom-Generierung absichern.
+. *Templates erweitern* -- Arc42, Req42, Structurizr, Asciidoc-Basics,
+  Collector-Demos, PDF-Export (aktuell nur `Basic`).
+. *`manage`-Befehl* -- `add-component`, `add-module`, `set-ui`, `validate`,
+  `doctor`, `upgrade`.
+. *Beschränkung auf leere/existente-Root-Projektverzeichnisse aufheben* --
+  Initialisierung in genutzte Verzeichnisse zulassen.
+. *Dateisystem-Zugriff vereinheitlichen* -- `std` vs. `tokio` konsolidieren.
+. *Zippen* -- optionales Packaging des gebauten Sites.
+. *Dokumentation konsolidieren* -- Begriffe und Wortwahl an Antora-Docs
+  angleichen (`legacy_readme.adoc` wurde überführt und entfernt).
+. *Veröffentlichung* -- Hosting/Installation (cargo-install, Binär-Release).
+
+[NOTE]
+*Überführt und erledigt* (aus der Vorgänger-Dokumentation):
+Playbook- und `antora.yml`-Modellierung via Serde (umgesetzt mit
+`serde_yaml_bw`/`toml`); Confluence-Publishing (implementiert).
+
+[_refaktorierungsplan]
+== Refaktorierungsplan
+
+Strukturiert in Epics mit Begründung und Zielbild. Jedes Epic ist eigenständig
+abgrenzbar; die Reihenfolge ist eine Empfehlung, keine starre Vorgabe.
+
+=== Epic 1: Fehler-Architektur (Fundament)
+
+*Problem:* 41 `exit()`-Aufrufe in `antora-cli`, `panic!`/`unwrap` im
+`ProcessBuilder` (Stellen `processbuilder::110`, `::134`), heterogene
+Error-Typen pro Crate.
+
+*Maßnahmen:*
+
+* Pro Crate einen spezifischen `Error`-Enum mit manueller `Display`-
+  und `From`-Implementierung versehen (kein `thiserror`).
+* Fehler bis zur CLI-Grenze propagieren; `exit()` nur an *einer* Stelle
+  (Top-Level-Handler in `application/mod.rs`).
+* `LineProcessor`-Panics durch `break` + Fehler-Rückgabe ersetzen.
+* Alle `unwrap()`/`expect()` ohne invariant-basierte Begründung entfernen.
+
+*Nutzen:* Testbarkeit (kein Prozess-Exit mehr in Unit-Tests), saubere
+Diagnostik, Grundlage für alle weiteren Epics.
+
+=== Epic 2: VFS-Härtung
+
+*Problem:* Kein Read-Back aus dem virtuellen Store; der angedachte
+"spätere-Schritte-haben-Vorrang"-Refinement-Chain ist nicht realisierbar.
+
+*Maßnahmen:*
+
+* `Vfs::read(relative_file) -> Option<&Resource>` ergänzen.
+* `WriteMode`-Semantik dokumentieren und in Tests verankern.
+* `persist()`-Rückgabewert (Anzahl geschriebener Dateien) in der
+  Erfolgsmeldung ausgeben (ursprüngliches TODO aus der Vorgänger-README).
+* `--dry-run`-Flag für `init` einführen (das VFS unterstützt dies nativ).
+
+*Nutzen:* Idempotente Init-Schritte, nachvollziehbare Erfolgsmeldungen,
+sichere Vorschau.
+
+=== Epic 3: Test-Fundament
+
+*Problem:* Nur `ResourceId`, `git`, `helpers`, `antora_secrets`,
+`extension_config` haben Tests. Kernflüsse ungesichert.
+
+*Maßnahmen:*
+
+* Roundtrip-Tests für alle serde-Modelle (`AntoraConfiguration`,
+  `AntoraPlaybook`, `ComponentVersionDescriptor`).
+* Persist-Konflikt-Tests für `Vfs` (IfNotExist/OrAppend/OrOverwrite).
+* Integrationstests für `init` (Temp-Verzeichnis, assertion auf erzeugte
+  Dateien).
+* Snapshot/Golden-Test für `PomXmlTemplate`-Generierung.
+* `ProcessBuilder`-Tests mit Mock-`ExtTool`.
+
+*Nutzen:* Regressionssicherheit bevor Templates und Befehle erweitert werden.
+
+=== Epic 4: Template-System
+
+*Problem:* Nur ein Template (`Basic`); `PomXmlTemplate` ist 389 Zeilen
+imperatives XML-Bauen.
+
+*Maßnahmen:*
+
+* `Templates`-Enum um `Arc42`, `Req42`, `Structurizr`, `AsciidocBasics`,
+  `CollectorDemo` erweitern.
+* Templates modular komponierbar machen ("Basis + optionale Features").
+* `PomXmlTemplate` auf deklarative Vorlage (Handlebars/`askama`) umstellen.
+* Template-Auswahl über CLI-Args ermöglichen; Defaults auslagern.
+
+*Nutzen:* Nutzbarer Mehrwert für Anwender, Reduktion der imperativen Komplexität.
+
+=== Epic 5: Konfigurierbarkeit entkoppeln
+
+*Problem:* Hartcodierte Defaults in `confluence` (URL, Space);
+Default-Image im Quelltext.
+
+*Maßnahmen:*
+
+* Confluence-Defaults externalisieren oder als optionalen Profil-Mechanismus.
+* Default-Image und -Tag konfigurierbar machen (über `antora.toml` bereits
+  möglich, dokumentieren).
+* Build-URL-Extraktion robuster machen (statt Regex Antora-Output-Format
+  nutzen oder versionsspezifische Patterns).
+
+*Nutzen:* Wiederverwendbarkeit über den ursprünglichen organisatorischen
+Kontext hinaus.
+
+=== Epic 6: `manage`-Befehl
+
+*Problem:* Nur `init`/`site`/`confluence`; Nachführen bestehender Projekte
+erfolgt manuell.
+
+*Maßnahmen:*
+
+* `add-component <name>` -- neue Component unter bestehendem Project.
+* `add-module <component> <module>` -- Modul zu bestehender Component.
+* `set-ui <bundle>` -- UI-Bundle im Playbook setzen.
+* `validate` -- Konsistenzprüfung (Component = `antora.yml` + `modules/`).
+* `doctor` -- Diagnose (Git-Konstellation, Container-Verfügbarkeit, Secrets).
+* `upgrade` -- Migration bei Format-/Konventionsänderungen.
+
+*Nutzen:* Lebenszyklus-Abdeckung über den Initialisierungs-Fall hinaus.
+
+== Status
+
+* Workspace: 5 Crates, Edition 2024, Resolver 3.
+* `antora-cli`: 0.7.0.
+* Funktionsfähig: `init`, `site`, `confluence`.
+* Offen: Tests, `manage`, erweiterte Templates, Veröffentlichungspfad.
