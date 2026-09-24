@@ -8,7 +8,7 @@ use relative_path::RelativeFile;
 use std::{path::Path, process::exit};
 
 use super::InitArgs;
-use crate::{TemplateResolver, assistant::InitAssistant};
+use crate::{TemplateResolver, TemplateResolverError, assistant::InitAssistant};
 
 pub struct InitTask;
 
@@ -176,14 +176,24 @@ impl InitTask {
         };
 
         let mut template = if let Some(key) = init_args.template_key {
-            template_resolver
-                .resolve(
-                    key,
-                    &results,
-                    component_version,
-                    init_args.include_scaffolding,
-                )
-                .unwrap_or_else(|e| panic!("error: {e}"))
+            match template_resolver.resolve(
+                key,
+                &results,
+                component_version,
+                init_args.include_scaffolding,
+            ) {
+                Ok(resolved) => resolved,
+                Err(TemplateResolverError::InvalidTemplateKey(key)) => {
+                    eprintln!(
+                        r#"error: template-key '{key}' is not valid
+
+Valid template-keys are:
+{}"#,
+                        template_resolver.valid_keys().join(",")
+                    );
+                    std::process::exit(1);
+                }
+            }
         } else {
             template_resolver.default(&results, component_version, init_args.include_scaffolding)
         };

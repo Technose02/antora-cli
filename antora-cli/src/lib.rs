@@ -51,6 +51,9 @@ impl TemplateResolver for DefaultTemplateResolver {
             s => Err(TemplateResolverError::invalid_template_key(s)),
         }
     }
+    fn valid_keys(&self) -> &[&str] {
+        &["basic"]
+    }
 }
 
 pub fn run_from_env_args(template_resolver: Box<dyn TemplateResolver>) {
