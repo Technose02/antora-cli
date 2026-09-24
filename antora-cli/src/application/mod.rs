@@ -2,7 +2,7 @@ use std::{borrow::Borrow, ffi::OsString};
 
 use crate::tasks::{ConfluenceArgs, SiteArgs, run_confluence, run_site};
 use clap::Parser;
-use init_template::{InitArgs, InitTask, TemplateResolver};
+use init_task::{InitArgs, InitTask, TemplateResolver};
 mod cli;
 
 pub use cli::{CliApp, CliCommands};

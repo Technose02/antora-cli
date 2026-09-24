@@ -1,5 +1,5 @@
 use antora_fs::Resource;
-use init_template::InitAssistantResults;
+use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
 // scaffolding/pages/antora-concepts.adoc

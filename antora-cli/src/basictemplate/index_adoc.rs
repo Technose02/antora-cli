@@ -1,6 +1,6 @@
 use antora_fs::Resource;
 use antora_project::component_version::ComponentVersion;
-use init_template::InitAssistantResults;
+use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
 pub(super) fn relative_file() -> RelativeFile {

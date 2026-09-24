@@ -3,8 +3,8 @@ mod application;
 mod basictemplate;
 pub mod tasks;
 use basictemplate::Basic;
-use init_template::Template;
-use init_template::{InitAssistantResults, TemplateResolver, TemplateResolverError};
+use init_task::Template;
+use init_task::{InitAssistantResults, TemplateResolver, TemplateResolverError};
 
 pub struct DefaultTemplateResolver;
 impl DefaultTemplateResolver {

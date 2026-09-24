@@ -69,7 +69,7 @@ dependencies = [
  "antora-process",
  "antora-project",
  "clap",
- "init-template",
+ "init-task",
  "regex",
  "relative-path",
  "webbrowser",
@@ -389,7 +389,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "init-template"
+name = "init-task"
 version = "0.1.0"
 dependencies = [
  "antora-fs",
