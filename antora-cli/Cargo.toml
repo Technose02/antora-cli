@@ -13,3 +13,4 @@ antora-fs = { path = "../antora-fs" }
 antora-process = { path = "../antora-process" }
 relative-path = { path = "../relative-path" }
 init-task = { path = "../init-task" }
+init-templates = { path = "../init-templates" }

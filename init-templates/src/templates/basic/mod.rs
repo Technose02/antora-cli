@@ -1,4 +1,3 @@
-use super::{InitAssistantResults, Template};
 use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR, ANTORA_SECRETS_CONFIGURATION, Vfs};
 use antora_project::{
     antora_configuration::{AntoraConfiguration, PlaybookConfig},
@@ -17,7 +16,7 @@ use antora_project::{
     module_name::{ModuleName, ROOT_MODULE},
     resource_id::{ResourceId, ResourceIdDetailLevel},
 };
-use init_task::TemplateResolver;
+use init_task::{InitAssistantResults, Template, TemplateResolver};
 use relative_path::RelativeDir;
 
 mod antora_assembler_pdf_yml;
@@ -25,7 +24,7 @@ mod index_adoc;
 mod scaffolding;
 //mod pdf_theme_yml;
 
-pub struct Basic {
+pub struct BasicTemplate {
     init_assistant_results: InitAssistantResults,
     component_version: ComponentVersion,
     cached_component_version_descriptor: Option<ComponentVersionDescriptor>,
@@ -33,7 +32,7 @@ pub struct Basic {
     include_scaffolding: bool,
 }
 
-impl Basic {
+impl BasicTemplate {
     pub fn new(
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
@@ -196,7 +195,7 @@ impl Basic {
     }
 }
 
-impl Template for Basic {
+impl Template for BasicTemplate {
     fn get_gitignore_content(&self) -> String {
         format!(
             r#"

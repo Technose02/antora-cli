@@ -1,0 +1,10 @@
+[package]
+name = "init-templates"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+antora-project = { path = "../antora-project" }
+antora-fs = { path = "../antora-fs" }
+relative-path = { path = "../relative-path" }
+init-task = { path = "../init-task" }

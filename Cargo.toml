@@ -1,5 +1,5 @@
 [workspace]
-members = ["antora-cli", "antora-fs", "antora-process", "antora-project", "relative-path", "init-task"]
+members = ["antora-cli", "antora-fs", "antora-process", "antora-project", "relative-path", "init-task", "init-templates"]
 default-members = [ "antora-cli" ]
 resolver = "2"
 

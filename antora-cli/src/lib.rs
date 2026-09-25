@@ -1,80 +1,10 @@
-use antora_project::antora_configuration::ImageConfig;
-use antora_project::component_version::ComponentVersion;
+use init_task::TemplateResolver;
+
 mod application;
-mod basictemplate;
 pub mod tasks;
-use basictemplate::Basic;
-use init_task::Template;
-use init_task::{InitAssistantResults, TemplateResolver, TemplateResolverError};
 
-pub struct DefaultTemplateResolver {
-    valid_keys: Vec<String>,
-}
-
-impl Default for DefaultTemplateResolver {
-    fn default() -> Self {
-        Self {
-            valid_keys: vec!["basic".into()],
-        }
-    }
-}
-
-impl DefaultTemplateResolver {
-    fn basic(
-        &self,
-        init_assistant_results: &InitAssistantResults,
-        component_version: &ComponentVersion,
-        include_scaffolding: bool,
-    ) -> Box<Basic> {
-        Box::new(Basic::new(
-            init_assistant_results,
-            component_version,
-            include_scaffolding,
-        ))
-    }
-}
-
-impl TemplateResolver for DefaultTemplateResolver {
-    fn default(
-        &self,
-        init_assistant_results: &InitAssistantResults,
-        component_version: &ComponentVersion,
-        include_scaffolding: bool,
-    ) -> Box<dyn Template> {
-        self.basic(
-            init_assistant_results,
-            component_version,
-            include_scaffolding,
-        )
-    }
-    fn try_resolve(
-        &self,
-        init_assistant_results: &InitAssistantResults,
-        component_version: &ComponentVersion,
-        include_scaffolding: bool,
-    ) -> Result<Box<dyn Template>, TemplateResolverError> {
-        match init_assistant_results.init_template_key() {
-            "basic" => Ok(self.basic(
-                init_assistant_results,
-                component_version,
-                include_scaffolding,
-            )),
-            s => Err(TemplateResolverError::invalid_init_template_key(s)),
-        }
-    }
-    fn valid_keys(&self) -> &[String] {
-        self.valid_keys.as_slice()
-    }
-    fn default_key(&self) -> &str {
-        "basic"
-    }
-    fn default_image_config(&self) -> antora_project::antora_configuration::ImageConfig {
-        ImageConfig {
-            antora_image: "<ANTORA_IMAGE_PATH>".to_owned(),
-            version_tag: "<ANTORA_IMAGE_VERSION_TAG>".to_owned(),
-        }
-    }
-}
+mod defaulttemplateresolver;
+pub use defaulttemplateresolver::DefaultTemplateResolver;
 
 pub fn run_from_env_args(template_resolver: Box<dyn TemplateResolver>) {
     application::run_cli(std::env::args_os(), template_resolver)
