@@ -53,7 +53,7 @@ pub enum CliCommands {
 
         /// the key of the template to use for initialization
         #[arg(long, value_name = "TEMPLATE-KEY")]
-        template_key: Option<String>,
+        init_template_key: Option<String>,
 
         /// set to add pdf-export to your project (will add the extension to the playbook and create a default config-file)
         #[arg(short = 'p', long, value_name = "FLAG")]

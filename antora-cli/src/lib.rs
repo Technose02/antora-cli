@@ -46,14 +46,13 @@ impl TemplateResolver for DefaultTemplateResolver {
             include_scaffolding,
         )
     }
-    fn resolve(
+    fn try_resolve(
         &self,
-        key: &str,
         init_assistant_results: &InitAssistantResults,
         component_version: ComponentVersion,
         include_scaffolding: bool,
     ) -> Result<Box<dyn Template>, TemplateResolverError> {
-        match key {
+        match init_assistant_results.init_template_key() {
             "basic" => Ok(self.basic(
                 init_assistant_results,
                 component_version,
@@ -64,6 +63,9 @@ impl TemplateResolver for DefaultTemplateResolver {
     }
     fn valid_keys(&self) -> &[String] {
         self.valid_keys.as_slice()
+    }
+    fn default_key(&self) -> &str {
+        "basic"
     }
 }
 

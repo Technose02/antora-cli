@@ -24,7 +24,7 @@ where
             component_title,
             component_version,
             playbook_site_title,
-            template_key,
+            init_template_key,
             export_pdf,
         } => InitTask::run(
             InitArgs {
@@ -36,7 +36,7 @@ where
                 provided_component_title: component_title.as_ref(),
                 provided_component_version: component_version.as_ref(),
                 provided_playbook_site_title: playbook_site_title.as_ref(),
-                template_key: template_key.as_ref(),
+                provided_init_template_key: init_template_key.as_ref(),
                 export_pdf: *export_pdf,
             },
             template_resolver,

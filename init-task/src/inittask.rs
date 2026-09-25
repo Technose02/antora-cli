@@ -8,7 +8,7 @@ use relative_path::RelativeFile;
 use std::{path::Path, process::exit};
 
 use super::InitArgs;
-use crate::{TemplateResolver, TemplateResolverError, assistant::InitAssistant};
+use crate::{TemplateResolver, assistant::InitAssistant};
 
 pub struct InitTask;
 
@@ -156,9 +156,10 @@ impl InitTask {
                 .with_provided_content_source_root(init_args.provided_docs_dir)
                 .with_provided_component_name(init_args.provided_component_name)
                 .with_provided_component_title(init_args.provided_component_title)
-                .with_provided_playbook_site_title(init_args.provided_playbook_site_title);
+                .with_provided_playbook_site_title(init_args.provided_playbook_site_title)
+                .with_provided_template_key(init_args.provided_init_template_key);
 
-            assistant.process_exitting_eventually()
+            assistant.process_exitting_eventually(&*template_resolver)
         };
 
         // create template according to args
@@ -175,37 +176,18 @@ impl InitTask {
             ComponentVersion::empty()
         };
 
-        let mut template = if let Some(key) = init_args.template_key {
-            match template_resolver.resolve(
-                key,
-                &results,
-                component_version,
-                init_args.include_scaffolding,
-            ) {
-                Ok(resolved) => resolved,
-                Err(TemplateResolverError::InvalidTemplateKey(key)) => {
-                    eprintln!(
-                        r#"error: template-key '{key}' is not valid
-
-Valid template-keys are:
-{}"#,
-                        template_resolver.valid_keys().join(",")
-                    );
-                    std::process::exit(1);
-                }
-            }
-        } else {
-            template_resolver.default(&results, component_version, init_args.include_scaffolding)
-        };
+        let mut init_template = template_resolver
+            .try_resolve(&results, component_version, init_args.include_scaffolding)
+            .expect("Template must resolve from valid InitAssistantResults");
 
         // create/update files according to template
-        template.process(&vfs, init_args.export_pdf);
+        init_template.process(&vfs, init_args.export_pdf);
 
         // write .gitignore using content created from template
-        vfs.write_gitignore(template.get_gitignore_content());
+        vfs.write_gitignore(init_template.get_gitignore_content());
 
         // get updated antora_configuration from template
-        let antora_configuration = template.get_antora_configuration();
+        let antora_configuration = init_template.get_antora_configuration();
 
         // optionally refine antora_configuration further
 
@@ -213,7 +195,8 @@ Valid template-keys are:
         vfs.write_antora_configuration(antora_configuration.to_string());
 
         // get component_version_descriptor if template defines one
-        if let Some(component_version_descriptor) = template.get_component_version_descriptor() {
+        if let Some(component_version_descriptor) = init_template.get_component_version_descriptor()
+        {
             // optionally refine component_version_descriptor further
 
             vfs.write_component_version_descriptor(
@@ -223,7 +206,7 @@ Valid template-keys are:
         }
 
         // write antora_playbook with filename as defined in antora_configuration
-        if let Some(antora_playbook) = template.get_antora_playbook() {
+        if let Some(antora_playbook) = init_template.get_antora_playbook() {
             // optionally refine antora_playbook further
 
             vfs.write_antora_playbook_as(

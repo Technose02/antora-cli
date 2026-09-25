@@ -24,7 +24,7 @@ pub struct InitArgs<'cli> {
     pub provided_component_title: Option<&'cli String>,
     pub provided_component_version: Option<&'cli String>,
     pub provided_playbook_site_title: Option<&'cli String>,
-    pub template_key: Option<&'cli String>,
+    pub provided_init_template_key: Option<&'cli String>,
     pub export_pdf: bool,
 }
 
@@ -58,18 +58,21 @@ pub trait Template {
 }
 
 pub trait TemplateResolver {
-    fn resolve(
+    fn try_resolve(
         &self,
-        key: &str,
         init_assistant_results: &InitAssistantResults,
         component_version: ComponentVersion,
         include_scaffolding: bool,
     ) -> Result<Box<dyn Template>>;
+
     fn default(
         &self,
         init_assistant_results: &InitAssistantResults,
         component_version: ComponentVersion,
         include_scaffolding: bool,
     ) -> Box<dyn Template>;
+
     fn valid_keys(&self) -> &[String];
+
+    fn default_key(&self) -> &str;
 }
