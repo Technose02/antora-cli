@@ -6,7 +6,18 @@ use basictemplate::Basic;
 use init_task::Template;
 use init_task::{InitAssistantResults, TemplateResolver, TemplateResolverError};
 
-pub struct DefaultTemplateResolver;
+pub struct DefaultTemplateResolver {
+    valid_keys: Vec<String>,
+}
+
+impl Default for DefaultTemplateResolver {
+    fn default() -> Self {
+        Self {
+            valid_keys: vec!["basic".into()],
+        }
+    }
+}
+
 impl DefaultTemplateResolver {
     fn basic(
         &self,
@@ -51,8 +62,8 @@ impl TemplateResolver for DefaultTemplateResolver {
             s => Err(TemplateResolverError::invalid_template_key(s)),
         }
     }
-    fn valid_keys(&self) -> &[&str] {
-        &["basic"]
+    fn valid_keys(&self) -> &[String] {
+        self.valid_keys.as_slice()
     }
 }
 

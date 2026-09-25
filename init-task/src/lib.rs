@@ -71,5 +71,5 @@ pub trait TemplateResolver {
         component_version: ComponentVersion,
         include_scaffolding: bool,
     ) -> Box<dyn Template>;
-    fn valid_keys(&self) -> &[&str];
+    fn valid_keys(&self) -> &[String];
 }
