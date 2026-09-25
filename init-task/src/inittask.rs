@@ -177,7 +177,7 @@ impl InitTask {
         };
 
         let mut init_template = template_resolver
-            .try_resolve(&results, component_version, init_args.include_scaffolding)
+            .try_resolve(&results, &component_version, init_args.include_scaffolding)
             .expect("Template must resolve from valid InitAssistantResults");
 
         // create/update files according to template

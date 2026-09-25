@@ -61,14 +61,14 @@ pub trait TemplateResolver {
     fn try_resolve(
         &self,
         init_assistant_results: &InitAssistantResults,
-        component_version: ComponentVersion,
+        component_version: &ComponentVersion,
         include_scaffolding: bool,
     ) -> Result<Box<dyn Template>>;
 
     fn default(
         &self,
         init_assistant_results: &InitAssistantResults,
-        component_version: ComponentVersion,
+        component_version: &ComponentVersion,
         include_scaffolding: bool,
     ) -> Box<dyn Template>;
 

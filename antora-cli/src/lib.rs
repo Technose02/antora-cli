@@ -22,7 +22,7 @@ impl DefaultTemplateResolver {
     fn basic(
         &self,
         init_assistant_results: &InitAssistantResults,
-        component_version: ComponentVersion,
+        component_version: &ComponentVersion,
         include_scaffolding: bool,
     ) -> Box<Basic> {
         Box::new(Basic::new(
@@ -37,7 +37,7 @@ impl TemplateResolver for DefaultTemplateResolver {
     fn default(
         &self,
         init_assistant_results: &InitAssistantResults,
-        component_version: ComponentVersion,
+        component_version: &ComponentVersion,
         include_scaffolding: bool,
     ) -> Box<dyn Template> {
         self.basic(
@@ -49,7 +49,7 @@ impl TemplateResolver for DefaultTemplateResolver {
     fn try_resolve(
         &self,
         init_assistant_results: &InitAssistantResults,
-        component_version: ComponentVersion,
+        component_version: &ComponentVersion,
         include_scaffolding: bool,
     ) -> Result<Box<dyn Template>, TemplateResolverError> {
         match init_assistant_results.init_template_key() {

@@ -35,12 +35,12 @@ pub struct Basic {
 impl Basic {
     pub fn new(
         init_assistant_results: &InitAssistantResults,
-        component_version: ComponentVersion,
+        component_version: &ComponentVersion,
         include_scaffolding: bool,
     ) -> Self {
         Self {
             init_assistant_results: init_assistant_results.clone(),
-            component_version,
+            component_version: component_version.clone(),
             cached_component_version_descriptor: None,
             cached_playbook: None,
             include_scaffolding,
