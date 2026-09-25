@@ -1,7 +1,7 @@
 use super::{InitAssistantResults, Template};
 use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR, ANTORA_SECRETS_CONFIGURATION, Vfs};
 use antora_project::{
-    antora_configuration::{AntoraConfiguration, ImageConfig, PlaybookConfig},
+    antora_configuration::{AntoraConfiguration, PlaybookConfig},
     antora_playbook::{
         AntoraExtensionBuilder, AntoraPlaybook, AntoraPlaybookBuilder, AntoraSectionBuilder,
         AsciidocSectionBuilder, AttributeValue, ContentSectionBuilder, ContentSourceBuilder,
@@ -17,6 +17,7 @@ use antora_project::{
     module_name::{ModuleName, ROOT_MODULE},
     resource_id::{ResourceId, ResourceIdDetailLevel},
 };
+use init_task::TemplateResolver;
 use relative_path::RelativeDir;
 
 mod antora_assembler_pdf_yml;
@@ -330,10 +331,13 @@ impl Template for Basic {
         }
     }
 
-    fn get_antora_configuration(&self) -> AntoraConfiguration {
+    fn get_antora_configuration(
+        &self,
+        template_resolver: &dyn TemplateResolver,
+    ) -> AntoraConfiguration {
         AntoraConfiguration {
             playbook: PlaybookConfig::default(),
-            antora_image: ImageConfig::default(),
+            antora_image: template_resolver.default_image_config(),
             confluence: None,
         }
     }

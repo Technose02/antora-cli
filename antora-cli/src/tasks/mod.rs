@@ -1,5 +1,5 @@
 use antora_fs::ANTORA_CACHE_DIR;
-use antora_project::antora_playbook::AntoraPlaybook;
+use antora_project::{antora_configuration::ImageConfig, antora_playbook::AntoraPlaybook};
 use std::fmt::Display;
 
 mod confluence;
@@ -59,6 +59,7 @@ pub struct SiteArgs<'cli> {
     pub(crate) fetch: bool,
     pub(crate) stacktrace: bool,
     pub(crate) log_level: AntoraLogLevel,
+    pub(crate) default_image_config: ImageConfig,
     pub(crate) open: bool,
 }
 
@@ -68,6 +69,7 @@ pub struct ConfluenceArgs<'cli> {
     pub(crate) fetch: bool,
     pub(crate) stacktrace: bool,
     pub(crate) log_level: AntoraLogLevel,
+    pub(crate) default_image_config: ImageConfig,
 }
 
 fn get_antora_cache_dir(playbook: Option<&AntoraPlaybook>) -> String {

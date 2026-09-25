@@ -10,7 +10,7 @@ use antora_process::{
 };
 use antora_project::{
     Result as ProjectResult,
-    antora_configuration::{AntoraConfiguration, ImageConfig, PlaybookConfig},
+    antora_configuration::{AntoraConfiguration, PlaybookConfig},
     antora_playbook::AntoraPlaybook,
     antora_secrets::AntoraSecrets,
 };
@@ -111,7 +111,7 @@ pub fn run(site_args: SiteArgs) {
             println!("warning: no antora-config found, using defaults");
             AntoraConfiguration {
                 playbook: PlaybookConfig::default(),
-                antora_image: ImageConfig::default(),
+                antora_image: site_args.default_image_config,
                 confluence: None,
             }
         }

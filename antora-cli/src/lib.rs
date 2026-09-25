@@ -1,3 +1,4 @@
+use antora_project::antora_configuration::ImageConfig;
 use antora_project::component_version::ComponentVersion;
 mod application;
 mod basictemplate;
@@ -66,6 +67,12 @@ impl TemplateResolver for DefaultTemplateResolver {
     }
     fn default_key(&self) -> &str {
         "basic"
+    }
+    fn default_image_config(&self) -> antora_project::antora_configuration::ImageConfig {
+        ImageConfig {
+            antora_image: "<ANTORA_IMAGE_PATH>".to_owned(),
+            version_tag: "<ANTORA_IMAGE_VERSION_TAG>".to_owned(),
+        }
     }
 }
 

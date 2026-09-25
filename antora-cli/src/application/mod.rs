@@ -52,6 +52,7 @@ where
             playbook_filename: playbook.as_ref(),
             fetch: *fetch,
             stacktrace: *stacktrace,
+            default_image_config: template_resolver.default_image_config(),
             log_level: log_level.clone().unwrap_or_default(),
             open: *open,
         }),
@@ -65,6 +66,7 @@ where
             playbook: playbook.as_ref(),
             fetch: *fetch,
             stacktrace: *stacktrace,
+            default_image_config: template_resolver.default_image_config(),
             log_level: log_level.clone().unwrap_or_default(),
         }),
     }

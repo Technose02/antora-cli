@@ -73,12 +73,3 @@ pub struct ImageConfig {
     pub antora_image: String,
     pub version_tag: String,
 }
-
-impl Default for ImageConfig {
-    fn default() -> Self {
-        Self {
-            antora_image: "<ANTORA_IMAGE_PATH>".to_owned(),
-            version_tag: "<ANTORA_IMAGE_VERSION_TAG>".to_owned(),
-        }
-    }
-}

@@ -187,7 +187,7 @@ impl InitTask {
         vfs.write_gitignore(init_template.get_gitignore_content());
 
         // get updated antora_configuration from template
-        let antora_configuration = init_template.get_antora_configuration();
+        let antora_configuration = init_template.get_antora_configuration(&*template_resolver);
 
         // optionally refine antora_configuration further
 

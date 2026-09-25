@@ -1,6 +1,6 @@
 use antora_fs::Vfs;
 use antora_project::{
-    antora_configuration::AntoraConfiguration,
+    antora_configuration::{AntoraConfiguration, ImageConfig},
     antora_playbook::AntoraPlaybook,
     component_version_descriptor::{ComponentVersion, ComponentVersionDescriptor},
 };
@@ -43,7 +43,10 @@ pub trait Template {
     fn get_gitignore_content(&self) -> String;
 
     /// returns the structure to write as antora.yaml
-    fn get_antora_configuration(&self) -> AntoraConfiguration;
+    fn get_antora_configuration(
+        &self,
+        template_resolver: &dyn TemplateResolver,
+    ) -> AntoraConfiguration;
 
     /// returns the structure to write as playbook
     fn get_antora_playbook(&self) -> Option<AntoraPlaybook> {
@@ -75,4 +78,6 @@ pub trait TemplateResolver {
     fn valid_keys(&self) -> &[String];
 
     fn default_key(&self) -> &str;
+
+    fn default_image_config(&self) -> ImageConfig;
 }
