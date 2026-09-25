@@ -157,7 +157,7 @@ impl InitTask {
                 .with_provided_component_name(init_args.provided_component_name)
                 .with_provided_component_title(init_args.provided_component_title)
                 .with_provided_playbook_site_title(init_args.provided_playbook_site_title)
-                .with_provided_template_key(init_args.provided_init_template_key);
+                .with_provided_init_template_key(init_args.provided_init_template_key);
 
             assistant.process_exitting_eventually(&*template_resolver)
         };

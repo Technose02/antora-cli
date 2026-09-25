@@ -58,7 +58,7 @@ impl TemplateResolver for DefaultTemplateResolver {
                 component_version,
                 include_scaffolding,
             )),
-            s => Err(TemplateResolverError::invalid_template_key(s)),
+            s => Err(TemplateResolverError::invalid_init_template_key(s)),
         }
     }
     fn valid_keys(&self) -> &[String] {
