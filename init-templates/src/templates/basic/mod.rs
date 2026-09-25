@@ -36,15 +36,32 @@ impl BasicTemplate {
     pub fn new(
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
-        include_scaffolding: bool,
     ) -> Self {
         Self {
             init_assistant_results: init_assistant_results.clone(),
             component_version: component_version.clone(),
             cached_component_version_descriptor: None,
             cached_playbook: None,
-            include_scaffolding,
+            include_scaffolding: false,
         }
+    }
+
+    pub fn with_cached_component_version_descriptor(
+        &mut self,
+        cached_component_version_descriptor: ComponentVersionDescriptor,
+    ) -> &mut Self {
+        self.cached_component_version_descriptor = Some(cached_component_version_descriptor);
+        self
+    }
+
+    pub fn with_cached_playbook(&mut self, cached_playbook: AntoraPlaybook) -> &mut Self {
+        self.cached_playbook = Some(cached_playbook);
+        self
+    }
+
+    pub fn with_include_scaffolding(&mut self) -> &mut Self {
+        self.include_scaffolding = true;
+        self
     }
 
     fn create_playbook(

@@ -42,11 +42,12 @@ impl DefaultTemplateResolver {
         component_version: &ComponentVersion,
         include_scaffolding: bool,
     ) -> Box<BasicTemplate> {
-        Box::new(BasicTemplate::new(
-            init_assistant_results,
-            component_version,
-            include_scaffolding,
-        ))
+        let mut basic_template = BasicTemplate::new(init_assistant_results, component_version);
+        if include_scaffolding {
+            basic_template.with_include_scaffolding();
+        }
+
+        Box::new(basic_template)
     }
 }
 
