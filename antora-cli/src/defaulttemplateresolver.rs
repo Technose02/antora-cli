@@ -1,7 +1,7 @@
 use antora_project::antora_configuration::ImageConfig;
 use antora_project::component_version::ComponentVersion;
 use init_task::{InitAssistantResults, Template, TemplateResolver, TemplateResolverError};
-use init_templates::BasicTemplate;
+use init_templates::{BasicTemplate, TutorialTemplate};
 
 pub struct DefaultTemplateResolver {
     valid_keys: Vec<String>,
@@ -17,6 +17,7 @@ impl Default for DefaultTemplateResolver {
 
         // insert all new keys
         valid_keys_set.insert(String::from("basic"));
+        valid_keys_set.insert(String::from("tutorial"));
 
         ////
 
@@ -40,14 +41,11 @@ impl DefaultTemplateResolver {
         &self,
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
-        include_scaffolding: bool,
     ) -> Box<BasicTemplate> {
-        let mut basic_template = BasicTemplate::new(init_assistant_results, component_version);
-        if include_scaffolding {
-            basic_template.with_include_scaffolding();
-        }
-
-        Box::new(basic_template)
+        Box::new(BasicTemplate::new(
+            init_assistant_results,
+            component_version,
+        ))
     }
 }
 
@@ -56,26 +54,20 @@ impl TemplateResolver for DefaultTemplateResolver {
         &self,
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
-        include_scaffolding: bool,
     ) -> Box<dyn Template> {
-        self.basic(
-            init_assistant_results,
-            component_version,
-            include_scaffolding,
-        )
+        self.basic(init_assistant_results, component_version)
     }
     fn try_resolve(
         &self,
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
-        include_scaffolding: bool,
     ) -> Result<Box<dyn Template>, TemplateResolverError> {
         match init_assistant_results.init_template_key() {
-            "basic" => Ok(self.basic(
+            "basic" => Ok(self.basic(init_assistant_results, component_version)),
+            "tutorial" => Ok(Box::new(TutorialTemplate::new(
                 init_assistant_results,
                 component_version,
-                include_scaffolding,
-            )),
+            ))),
             s => Err(TemplateResolverError::invalid_init_template_key(s)),
         }
     }

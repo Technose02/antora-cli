@@ -1,7 +1,7 @@
 use antora_fs::Resource;
 use relative_path::RelativeFile;
 
-// scaffolding/images/abbildung.svg
+// tutorial/images/abbildung.svg
 pub fn relative_file() -> RelativeFile {
     "abbildung.svg"
         .try_into()

@@ -1,7 +1,7 @@
 use antora_fs::Resource;
 use relative_path::RelativeFile;
 
-// scaffolding/pages/diagrams.adoc
+// tutorial/pages/diagrams.adoc
 pub fn relative_file() -> RelativeFile {
     "diagrams.adoc"
         .try_into()
@@ -21,7 +21,7 @@ Neben der Einbindung von Abbildungen als statische Dateien (``svg``,``png``, etc
 ----
 [plantuml]
 ....
-include::scaffolding:image$sequence.puml[]
+include::tutorial:image$sequence.puml[]
 ....
 ----
 
@@ -37,7 +37,7 @@ ifndef::building[]
 // die PlantUML-DSL angezeigt
 
 endif::[]
-include::scaffolding:image$sequence.puml[]
+include::tutorial:image$sequence.puml[]
 ....
 
 <<<
@@ -49,7 +49,7 @@ include::scaffolding:image$sequence.puml[]
 ----
 [mermaid]
 ....
-include::scaffolding:image$flowchart.mmd[]
+include::tutorial:image$flowchart.mmd[]
 ....
 ----
 
@@ -65,7 +65,7 @@ ifndef::building[]
 // die Mermaid-DSL angezeigt
 
 endif::[]
-include::scaffolding:image$flowchart.mmd[]
+include::tutorial:image$flowchart.mmd[]
 ....
 
 [NOTE]

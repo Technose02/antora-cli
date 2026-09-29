@@ -1,2 +1,2 @@
 mod templates;
-pub use templates::BasicTemplate;
+pub use templates::{BasicTemplate, TutorialTemplate};

@@ -2,7 +2,7 @@ use antora_fs::Resource;
 use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
-// scaffolding/pages/antora-concepts.adoc
+// tutorial/pages/antora-concepts.adoc
 pub fn relative_file() -> RelativeFile {
     "antora-concepts.adoc"
         .try_into()
@@ -40,7 +40,7 @@ Weitere Informationen::
 
 == Module
 
-Module gruppieren Inhalte innerhalb einer Komponente, z.B. das Standardmodul _ROOT_ oder benannte Module wie z.B. "scaffolding".
+Module gruppieren Inhalte innerhalb einer Komponente, z.B. das Standardmodul _ROOT_ oder benannte Module wie z.B. "tutorial".
 
 Weitere Informationen::
 * https://docs.antora.org/antora/latest/module-directories/
@@ -68,10 +68,10 @@ Mit `xref:` können Sie auf andere Seiten verlinken, z.B.:
 .Code
 [source, asciidoc, opts="linenums,nowrap"]
 ----
-xref:scaffolding:index.adoc[Startseite]
+xref:tutorial:index.adoc[Startseite]
 ----
 
-xref:scaffolding:index.adoc[Startseite]
+xref:tutorial:index.adoc[Startseite]
 
 Weitere Informationen::
 * https://docs.antora.org/antora/latest/navigation/xrefs-and-link-text/

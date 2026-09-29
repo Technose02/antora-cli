@@ -1,7 +1,7 @@
 use antora_fs::Resource;
 use relative_path::RelativeFile;
 
-// scaffolding/images/sequence.puml
+// tutorial/images/sequence.puml
 pub fn relative_file() -> RelativeFile {
     "sequence.puml"
         .try_into()

@@ -18,7 +18,6 @@ where
     match &cli.command {
         CliCommands::Init {
             non_interactive,
-            scaffolding,
             content_source_root,
             component_name,
             component_title,
@@ -30,7 +29,6 @@ where
             InitArgs {
                 project_dir,
                 non_interactive_flag: *non_interactive,
-                include_scaffolding: *scaffolding,
                 provided_docs_dir: content_source_root.as_ref(),
                 provided_component_name: component_name.as_ref(),
                 provided_component_title: component_title.as_ref(),

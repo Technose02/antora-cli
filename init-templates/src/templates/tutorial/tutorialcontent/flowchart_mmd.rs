@@ -1,7 +1,7 @@
 use antora_fs::Resource;
 use relative_path::RelativeFile;
 
-// scaffolding/images/flowchart.mmd
+// tutorial/images/flowchart.mmd
 pub fn relative_file() -> RelativeFile {
     "flowchart.mmd"
         .try_into()

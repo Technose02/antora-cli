@@ -3,7 +3,7 @@ use antora_project::component_version::ComponentVersion;
 use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
-// scaffolding/pages/index.adoc
+// tutorial/pages/index.adoc
 pub fn relative_file() -> RelativeFile {
     "index.adoc"
         .try_into()
@@ -23,8 +23,8 @@ Es enthält Beispiele, Erklärungen und Tipps zu Antora und AsciiDoc.
 
 Sobald Sie Ihre Dokumentation aufgebaut haben, können Sie dieses Modul einfach entfernen:
 
-- Löschen Sie das Verzeichnis `modules/scaffolding`
-- Entfernen Sie den entsprechenden Navigations-Verweis `modules/scaffolding/nav.adoc` in Ihrem _Component-Version-Descriptor_ (`antora.yml`)
+- Löschen Sie das Verzeichnis `modules/tutorial`
+- Entfernen Sie den entsprechenden Navigations-Verweis `modules/tutorial/nav.adoc` in Ihrem _Component-Version-Descriptor_ (`antora.yml`)
 
 Viel Erfolg!
 

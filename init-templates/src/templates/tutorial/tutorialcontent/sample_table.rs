@@ -1,7 +1,7 @@
 use antora_fs::Resource;
 use relative_path::RelativeFile;
 
-// scaffolding/partials/sample-table.adoc
+// tutorial/partials/sample-table.adoc
 pub fn relative_file() -> RelativeFile {
     "sample-table.adoc"
         .try_into()

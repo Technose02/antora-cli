@@ -1,7 +1,7 @@
 use antora_fs::Resource;
 use relative_path::{Filename, RelativeFile};
 
-// scaffolding/examples/collected/antora.yml
+// tutorial/examples/collected/antora.yml
 pub fn relative_file() -> RelativeFile {
     super::collected_dir()
         .push_file(Filename::try_from("antora.yml").expect("antora.yml is a valid Filename"))

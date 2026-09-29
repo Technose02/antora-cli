@@ -1,7 +1,7 @@
 use antora_fs::Resource;
 use relative_path::RelativeFile;
 
-// scaffolding/pages/asciidoc-intro.adoc
+// tutorial/pages/asciidoc-intro.adoc
 pub fn relative_file() -> RelativeFile {
     "asciidoc-intro.adoc"
         .try_into()
@@ -89,7 +89,7 @@ AsciiDoc erlaubt das Einbinden von Inhalten aus anderen Dateien. Antora erweiter
 
 Für größere oder mehrfach genutzte Tabellen empfiehlt sich die Auslagerung des Inhalts in eine eigene ``adoc``-Datei in der _partials-family_.
 
-In diesem Beispiel wurde der Inhalt in die Datei ``modules/scaffolding/partials/sample-table.adoc`` ausgelagert und über die _Resource ID_ (relativ zum aktuellen _Modul_) eingebunden:
+In diesem Beispiel wurde der Inhalt in die Datei ``modules/tutorial/partials/sample-table.adoc`` ausgelagert und über die _Resource ID_ (relativ zum aktuellen _Modul_) eingebunden:
 
 .AsciiDoc-Code zum Einbinden der Tabelle über einen partial
 [source,adoc,opts="linenums,nowrap", subs="attributes,specialchars"]
@@ -103,7 +103,7 @@ In diesem Beispiel wurde der Inhalt in die Datei ``modules/scaffolding/partials/
 .eingebundene Tabelle
 [%header, cols="1,2"]
 |===
-include::scaffolding:partial$sample-table.adoc[]
+include::tutorial:partial$sample-table.adoc[]
 |===
 
 Vorteile::

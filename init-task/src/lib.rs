@@ -18,7 +18,6 @@ pub use inittask::InitTask;
 pub struct InitArgs<'cli> {
     pub project_dir: Option<&'cli String>,
     pub non_interactive_flag: bool,
-    pub include_scaffolding: bool,
     pub provided_docs_dir: Option<&'cli String>,
     pub provided_component_name: Option<&'cli String>,
     pub provided_component_title: Option<&'cli String>,
@@ -65,14 +64,12 @@ pub trait TemplateResolver {
         &self,
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
-        include_scaffolding: bool,
     ) -> Result<Box<dyn Template>>;
 
     fn default(
         &self,
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
-        include_scaffolding: bool,
     ) -> Box<dyn Template>;
 
     fn valid_keys(&self) -> &[String];

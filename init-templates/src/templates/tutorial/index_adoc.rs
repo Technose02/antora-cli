@@ -12,13 +12,17 @@ pub(super) fn relative_file() -> RelativeFile {
 pub fn content(results: &InitAssistantResults, component_version: &ComponentVersion) -> Resource {
     let component_name = results.component_name().as_ref();
     let component_title = results.component_title();
-
+    let remove_tutorial_note = r#"====
+[IMPORTANT]
+__Entfernen Sie das xref:tutorial:index.adoc[_tutorial_-Modul], wenn Sie es nicht mehr benötigen. +
+Es ist *[underline]#nicht#* für ihre Dokumentation gedacht!__
+====
+"#;
     let rest_of_first_sentence = if component_version.is_empty() {
         format!("unversionierte Komponente \"{component_name}\"")
     } else {
         format!("Komponente \"{component_name}\" in der Version {component_version}")
     };
-
     Resource::TextBased(format!(
         r#"= Willkommen zu Ihrem Antora-Projekt: {component_title}
 
@@ -38,6 +42,7 @@ Um Ihre Dokumentation für "{component_title}" weiter aufzubauen, empfehlen wir 
 * Verwenden Sie _Navigations_-Dateien (`nav.adoc`), um eine klare und benutzerfreundliche Menüstruktur zu schaffen.
 * Experimentieren Sie mit AsciiDoc-Funktionen wie _Includes_, _Cross-Referencing_ und Diagrammen, um Ihre Dokumentation lebendig und wartbar zu gestalten.
 
+{remove_tutorial_note}
 Weitere Informationen finden Sie in der https://docs.antora.org[Antora-Dokumentation]. +
 Die Navigation finden Sie links.
 

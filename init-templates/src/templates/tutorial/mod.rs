@@ -9,8 +9,11 @@ use antora_project::{
     },
     component_name::ComponentName,
     component_version::ComponentVersion,
-    component_version_descriptor::ComponentVersionDescriptor,
-    module_name::ROOT_MODULE,
+    component_version_descriptor::{
+        self, ComponentVersionDescriptor,
+        extension_config::collector_extension::scan::{ScanValueArrayBuilder, ScanValueMap},
+    },
+    module_name::{ModuleName, ROOT_MODULE},
     resource_id::{ResourceId, ResourceIdDetailLevel},
 };
 use init_task::{InitAssistantResults, Template, TemplateResolver};
@@ -18,15 +21,17 @@ use relative_path::RelativeDir;
 
 mod antora_assembler_pdf_yml;
 mod index_adoc;
+mod pdf_theme_yml;
+mod tutorialcontent;
 
-pub struct BasicTemplate {
+pub struct TutorialTemplate {
     init_assistant_results: InitAssistantResults,
     component_version: ComponentVersion,
     cached_component_version_descriptor: Option<ComponentVersionDescriptor>,
     cached_playbook: Option<AntoraPlaybook>,
 }
 
-impl BasicTemplate {
+impl TutorialTemplate {
     pub fn new(
         init_assistant_results: &InitAssistantResults,
         component_version: &ComponentVersion,
@@ -150,9 +155,11 @@ impl BasicTemplate {
     }
 
     fn create_component_version_descriptor(
+        content_source_root: RelativeDir,
         component_name: impl Into<ComponentName>,
         component_title: impl Into<String>,
         component_version: &ComponentVersion,
+        collector_extension: bool,
     ) -> ComponentVersionDescriptor {
         let component_name = component_name.into();
         let mut component_version_descriptor =
@@ -160,11 +167,45 @@ impl BasicTemplate {
         component_version_descriptor.with_title(component_title);
         component_version_descriptor.with_version(component_version);
 
+        if collector_extension {
+            // create collector-config
+            let project_dir = format!(
+                "{}{}",
+                content_source_root,
+                "/..".repeat(content_source_root.count())
+            );
+            let component_root_dir = format!("{content_source_root}/{component_name}",);
+            let extension_config = {
+                use component_version_descriptor::extension_config::collector_extension::CollectorConfigArrayBuilder;
+
+                component_version_descriptor::extension_config::ExtensionConfig::default()
+                    .collector(
+                        CollectorConfigArrayBuilder::default()
+                            .scan(
+                                ScanValueArrayBuilder::default()
+                                    .push(
+                                        ScanValueMap::new(project_dir.as_str())
+                                            .files("antora-playbook.yml")
+                                            .into("modules/tutorial/examples/collected"),
+                                    )
+                                    .push(
+                                        ScanValueMap::new(component_root_dir.as_str())
+                                            .files("antora.yml")
+                                            .into("modules/tutorial/examples/collected"),
+                                    )
+                                    .build(),
+                            )
+                            .build(),
+                    )
+            };
+            component_version_descriptor.with_ext(extension_config);
+        }
+
         component_version_descriptor
     }
 }
 
-impl Template for BasicTemplate {
+impl Template for TutorialTemplate {
     fn get_gitignore_content(&self) -> String {
         format!(
             r#"
@@ -186,9 +227,11 @@ impl Template for BasicTemplate {
 
         // create component_version_descriptor
         let mut component_version_descriptor = Self::create_component_version_descriptor(
+            self.init_assistant_results.content_source_root(),
             self.init_assistant_results.component_name().clone(),
             self.init_assistant_results.component_title(),
             &self.component_version,
+            true,
         );
 
         // create and register component to create module
@@ -215,6 +258,63 @@ impl Template for BasicTemplate {
 
         component_version_descriptor.with_nav(nav_file_path);
 
+        let tutorial_module = component.register_module(
+            ModuleName::try_from("tutorial").expect("tutorial is a valid ModuleName"),
+        );
+        tutorial_module.init_all_family_directories();
+        let index_adoc_id = tutorial_module.write_page(
+            tutorialcontent::index_adoc_relative_file(),
+            tutorialcontent::index_adoc_content(
+                &self.init_assistant_results,
+                &self.component_version,
+            ),
+        );
+        let antora_concepts_adoc_id = tutorial_module.write_page(
+            tutorialcontent::antora_concepts_adoc_relative_file(),
+            tutorialcontent::antora_concepts_adoc_content(&self.init_assistant_results),
+        );
+        let asciidoc_intro_adoc_id = tutorial_module.write_page(
+            tutorialcontent::asciidoc_intro_adoc_relative_file(),
+            tutorialcontent::asciidoc_intro_adoc_content(),
+        );
+        let diagrams_adoc_id = tutorial_module.write_page(
+            tutorialcontent::diagrams_adoc_relative_file(),
+            tutorialcontent::diagrams_adoc_content(),
+        );
+        tutorial_module.write_example(
+            tutorialcontent::antora_yml_placeholder_relative_file(),
+            tutorialcontent::antora_yml_placeholder_content(),
+        );
+        tutorial_module.write_example(
+            tutorialcontent::antora_playbook_placeholder_relative_file(),
+            tutorialcontent::antora_playbook_placeholder_content(),
+        );
+        tutorial_module.write_image(
+            tutorialcontent::abbildung_svg_relative_file(),
+            tutorialcontent::abbildung_svg_content(),
+        );
+        tutorial_module.write_image(
+            tutorialcontent::flowchart_mmd_relative_file(),
+            tutorialcontent::flowchart_mmd_content(),
+        );
+        tutorial_module.write_image(
+            tutorialcontent::sequence_puml_relative_file(),
+            tutorialcontent::sequence_puml_content(),
+        );
+        tutorial_module.write_partial(
+            tutorialcontent::sample_table_relative_file(),
+            tutorialcontent::sample_table_content(),
+        );
+        let tutorial_nav_file_path = tutorial_module.write_nav(format!(
+            r#"* xref:{}[Tutorial]
+** xref:{}[Antora-Konzepte]
+** xref:{}[AsciiDoc-Intro]
+*** xref:{}[Diagramme]"#,
+            index_adoc_id, antora_concepts_adoc_id, asciidoc_intro_adoc_id, diagrams_adoc_id
+        ));
+
+        component_version_descriptor.with_nav(tutorial_nav_file_path);
+
         self.cached_playbook = Some(Self::create_playbook(
             start_page_id,
             self.init_assistant_results.playbook_site_title(),
@@ -230,6 +330,7 @@ impl Template for BasicTemplate {
                 antora_assembler_pdf_yml::relative_file(),
                 antora_assembler_pdf_yml::content(),
             );
+            vfs.write_project_resource(pdf_theme_yml::relative_file(), pdf_theme_yml::content());
         }
     }
 

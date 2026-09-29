@@ -27,10 +27,6 @@ pub enum CliCommands {
         #[arg(short = 'n', long, value_name = "FLAG")]
         non_interactive: bool,
 
-        /// set to include extra-contents on asciidoc and antora to help you getting started
-        #[arg(short = 's', long, value_name = "FLAG")]
-        scaffolding: bool,
-
         /// the content-source-root for your component (default: 'docs')
         #[arg(short = 'r', long, value_name = "DIR")]
         content_source_root: Option<String>,
