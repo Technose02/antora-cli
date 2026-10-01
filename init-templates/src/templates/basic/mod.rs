@@ -16,6 +16,8 @@ use antora_project::{
 use init_task::{InitAssistantResults, Template, TemplateResolver};
 use relative_path::RelativeDir;
 
+const DEFAULT_KROKI_SERVER_URL: &str = "https://kroki.io/";
+
 mod antora_assembler_pdf_yml;
 mod index_adoc;
 
@@ -140,8 +142,8 @@ impl BasicTemplate {
                     .attribute("figure-caption", "Abbildung")
                     .attribute("table-caption", "Tabelle")
                     .attribute("collapsible-arc42-help", "use")
-                    .attribute("kroki-server-url", "https://kroki.io")
-                    .attribute("diagram-server-url", "https://kroki.io")
+                    .attribute("kroki-server-url", DEFAULT_KROKI_SERVER_URL)
+                    .attribute("diagram-server-url", DEFAULT_KROKI_SERVER_URL)
                     .attribute("diagram-server-type", "kroki_io")
                     .attribute("kroki-fetch-diagram", true)
                     .build(),
@@ -227,8 +229,11 @@ impl Template for BasicTemplate {
 
         if pdf_target {
             vfs.write_project_resource(
-                antora_assembler_pdf_yml::relative_file(),
-                antora_assembler_pdf_yml::content(),
+                (
+                    antora_assembler_pdf_yml::relative_file(),
+                    antora_assembler_pdf_yml::content(),
+                )
+                    .into(),
             );
         }
     }

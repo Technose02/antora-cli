@@ -97,6 +97,34 @@ where
     pb
 }
 
+pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) -> ProcessBuilder {
+    let mut pb = ProcessBuilder::new();
+    pb.in_dir(dir).with_arg("run");
+    pb.with_args(["--rm", "-tv", ".:/antora:Z", image_tag, "structurizr"]);
+
+    pb.with_arg("export");
+    pb.with_arg("-w").with_arg("/antora/c4-model/workspace.dsl");
+    pb.with_arg("-f").with_arg(export_format);
+    pb.with_arg("-o")
+        .with_arg("/antora/c4-model/exported_diagrams");
+
+    pb
+}
+
+pub fn run_structurizr_local(dir: &Path, image_tag: &str, host_port: u16) -> ProcessBuilder {
+    let mut pb = ProcessBuilder::new();
+    pb.in_dir(dir)
+        .with_arg("run")
+        .with_arg("--rm")
+        .with_arg("-t");
+    pb.with_arg("-p").with_arg(format!("{}:8080", host_port));
+    pb.with_arg("-v").with_arg(".:/antora:Z");
+    pb.with_arg(image_tag);
+    pb.with_arg("structurizr").with_arg("local");
+
+    pb
+}
+
 pub fn run_confluence_publish<I, S>(
     dir: &Path,
     env_vars: I,

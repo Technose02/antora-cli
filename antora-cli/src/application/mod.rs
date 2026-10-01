@@ -1,6 +1,12 @@
 use std::{borrow::Borrow, ffi::OsString};
 
-use crate::tasks::{ConfluenceArgs, SiteArgs, run_confluence, run_site};
+use crate::{
+    application::cli::StructurizrCommands,
+    tasks::{
+        ConfluenceArgs, SiteArgs, run_confluence, run_export_structurizr_diagrams, run_site,
+        run_structurizr_local,
+    },
+};
 use clap::Parser;
 use init_task::{InitArgs, InitTask, TemplateResolver};
 mod cli;
@@ -67,5 +73,17 @@ where
             default_image_config: template_resolver.default_image_config(),
             log_level: log_level.clone().unwrap_or_default(),
         }),
+        CliCommands::Structurizr { command } => match command {
+            StructurizrCommands::Local { host_port } => run_structurizr_local(
+                project_dir,
+                template_resolver.default_image_config(),
+                *host_port,
+            ),
+            StructurizrCommands::ExportDiagrams { format } => run_export_structurizr_diagrams(
+                project_dir,
+                template_resolver.default_image_config(),
+                format.as_ref(),
+            ),
+        },
     }
 }

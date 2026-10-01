@@ -1,5 +1,4 @@
-use crate::tasks::AntoraLogLevel;
-
+use crate::tasks::{AntoraLogLevel, ExportFormat};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -98,5 +97,25 @@ pub enum CliCommands {
         /// adjust antora log-level (one of "fatal","error","warn","info","debug","all" or "silent" - default: "warn")
         #[arg(short = 'l', long, value_name = "ANTORALOGLEVEL")]
         log_level: Option<AntoraLogLevel>,
+    },
+
+    #[command(about = "runs structurizr (further commands need to follow)", long_about = None)]
+    Structurizr {
+        #[command(subcommand)]
+        command: StructurizrCommands,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum StructurizrCommands {
+    #[command(about = "runs a local structurizr instance", long_about=None)]
+    Local {
+        #[arg(short = 'p', long, value_name = "HOST_PORT")]
+        host_port: Option<u16>,
+    },
+    #[command(about = "exports diagrams from a given workspace using playwright", long_about = None)]
+    ExportDiagrams {
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<ExportFormat>,
     },
 }

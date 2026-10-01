@@ -327,10 +327,15 @@ impl Template for TutorialTemplate {
 
         if pdf_target {
             vfs.write_project_resource(
-                antora_assembler_pdf_yml::relative_file(),
-                antora_assembler_pdf_yml::content(),
+                (
+                    antora_assembler_pdf_yml::relative_file(),
+                    antora_assembler_pdf_yml::content(),
+                )
+                    .into(),
             );
-            vfs.write_project_resource(pdf_theme_yml::relative_file(), pdf_theme_yml::content());
+            vfs.write_project_resource(
+                (pdf_theme_yml::relative_file(), pdf_theme_yml::content()).into(),
+            );
         }
     }
 

@@ -3,6 +3,9 @@ use antora_project::component_version::ComponentVersion;
 use init_task::{InitAssistantResults, Template, TemplateResolver, TemplateResolverError};
 use init_templates::{BasicTemplate, TutorialTemplate};
 
+pub(crate) const DEFAULT_ANTORA_IMAGE_PATH: &str = "localhost/antora-image";
+pub(crate) const DEFAULT_ANTORA_IMAGE_VERSION: &str = "latest";
+
 pub struct DefaultTemplateResolver {
     valid_keys: Vec<String>,
     default_key_idx: usize,
@@ -82,8 +85,8 @@ impl TemplateResolver for DefaultTemplateResolver {
 
     fn default_image_config(&self) -> antora_project::antora_configuration::ImageConfig {
         ImageConfig {
-            antora_image: "<ANTORA_IMAGE_PATH>".to_owned(),
-            version_tag: "<ANTORA_IMAGE_VERSION_TAG>".to_owned(),
+            antora_image: DEFAULT_ANTORA_IMAGE_PATH.to_owned(),
+            version_tag: DEFAULT_ANTORA_IMAGE_VERSION.to_owned(),
         }
     }
 }

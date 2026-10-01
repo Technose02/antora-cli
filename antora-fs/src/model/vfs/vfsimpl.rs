@@ -1,6 +1,6 @@
 use crate::{
     ANTORA_CONFIGURATION, ANTORA_SECRETS_CONFIGURATION, COMPONENT_VERSION_DESCRIPTOR,
-    ComponentHandle, Error, GITIGNORE, ProjectInitDir, Resource, Result,
+    ComponentHandle, Error, GITIGNORE, ProjectInitDir, Resource, ResourceFile, Result,
 };
 use antora_project::{
     component_name::ComponentName, component_version::ComponentVersion,
@@ -51,8 +51,15 @@ impl From<&ProjectInitDir> for Vfs {
 }
 
 impl Vfs {
-    pub fn write_project_resource(&self, relative_file: RelativeFile, resource: Resource) {
-        self.write_resource(relative_file, resource, WriteMode::IfNotExist);
+    //pub fn write_project_resource(&self, relative_file: RelativeFile, resource: Resource) {
+    //    self.write_resource(relative_file, resource, WriteMode::IfNotExist);
+    //}
+    pub fn write_project_resource(&self, resource_file: ResourceFile) {
+        self.write_resource(
+            resource_file.path,
+            resource_file.content,
+            WriteMode::IfNotExist,
+        );
     }
 
     pub(crate) fn write_resource(
