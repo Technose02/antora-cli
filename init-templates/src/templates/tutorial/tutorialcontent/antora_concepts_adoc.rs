@@ -1,16 +1,19 @@
 use antora_fs::Resource;
+use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
-use crate::tasks::init::assistant::InitAssistantResults;
+// tutorial/pages/antora-concepts.adoc
+pub fn resource_file(results: &InitAssistantResults) -> (RelativeFile, Resource) {
+    (relative_file(), content(results))
+}
 
-// scaffolding/pages/antora-concepts.adoc
-pub fn relative_file() -> RelativeFile {
+fn relative_file() -> RelativeFile {
     "antora-concepts.adoc"
         .try_into()
         .expect("antora-concepts.adoc is a valid filename")
 }
 
-pub fn content(results: &InitAssistantResults) -> Resource {
+fn content(results: &InitAssistantResults) -> Resource {
     let component_name = results.component_name().as_ref();
     let content_source_root = results.content_source_root();
     Resource::TextBased(format!(
@@ -41,7 +44,7 @@ Weitere Informationen::
 
 == Module
 
-Module gruppieren Inhalte innerhalb einer Komponente, z.B. das Standardmodul _ROOT_ oder benannte Module wie z.B. "scaffolding".
+Module gruppieren Inhalte innerhalb einer Komponente, z.B. das Standardmodul _ROOT_ oder benannte Module wie z.B. "tutorial".
 
 Weitere Informationen::
 * https://docs.antora.org/antora/latest/module-directories/
@@ -69,10 +72,10 @@ Mit `xref:` können Sie auf andere Seiten verlinken, z.B.:
 .Code
 [source, asciidoc, opts="linenums,nowrap"]
 ----
-xref:scaffolding:index.adoc[Startseite]
+xref:tutorial:index.adoc[Startseite]
 ----
 
-xref:scaffolding:index.adoc[Startseite]
+xref:tutorial:index.adoc[Startseite]
 
 Weitere Informationen::
 * https://docs.antora.org/antora/latest/navigation/xrefs-and-link-text/

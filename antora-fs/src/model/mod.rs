@@ -5,5 +5,5 @@ mod vfs;
 
 pub use normalize_path::NormalizePath;
 pub use project_init_dir::ProjectInitDir;
-pub use resource::Resource;
+pub use resource::{Resource, ResourceFile};
 pub use vfs::{ComponentHandle, ModuleHandle, Vfs};

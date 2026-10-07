@@ -1,12 +1,19 @@
 use std::{borrow::Borrow, ffi::OsString};
 
-use crate::tasks::{ConfluenceArgs, InitArgs, SiteArgs, run_confluence, run_init, run_site};
+use crate::{
+    application::cli::StructurizrCommands,
+    tasks::{
+        ConfluenceArgs, SiteArgs, run_confluence, run_export_structurizr_diagrams, run_site,
+        run_structurizr_local,
+    },
+};
 use clap::Parser;
+use init_task::{InitArgs, InitTask, TemplateResolver};
 mod cli;
 
 pub use cli::{CliApp, CliCommands};
 
-pub fn run_cli<I, T>(args_iter: I)
+pub fn run_cli<I, T>(args_iter: I, template_resolver: Box<dyn TemplateResolver>)
 where
     I: IntoIterator<Item = T>,
     T: Into<OsString> + Clone,
@@ -17,24 +24,27 @@ where
     match &cli.command {
         CliCommands::Init {
             non_interactive,
-            scaffolding,
             content_source_root,
             component_name,
             component_title,
             component_version,
             playbook_site_title,
+            init_template_key,
             export_pdf,
-        } => run_init(InitArgs {
-            project_dir,
-            non_interactive_flag: *non_interactive,
-            include_scaffolding: *scaffolding,
-            provided_docs_dir: content_source_root.as_ref(),
-            provided_component_name: component_name.as_ref(),
-            provided_component_title: component_title.as_ref(),
-            provided_component_version: component_version.as_ref(),
-            provided_playbook_site_title: playbook_site_title.as_ref(),
-            export_pdf: *export_pdf,
-        }),
+        } => InitTask::run(
+            InitArgs {
+                project_dir,
+                non_interactive_flag: *non_interactive,
+                provided_docs_dir: content_source_root.as_ref(),
+                provided_component_name: component_name.as_ref(),
+                provided_component_title: component_title.as_ref(),
+                provided_component_version: component_version.as_ref(),
+                provided_playbook_site_title: playbook_site_title.as_ref(),
+                provided_init_template_key: init_template_key.as_ref(),
+                export_pdf: *export_pdf,
+            },
+            template_resolver,
+        ),
         CliCommands::Site {
             playbook,
             fetch,
@@ -46,6 +56,7 @@ where
             playbook_filename: playbook.as_ref(),
             fetch: *fetch,
             stacktrace: *stacktrace,
+            default_image_config: template_resolver.default_image_config(),
             log_level: log_level.clone().unwrap_or_default(),
             open: *open,
         }),
@@ -59,7 +70,20 @@ where
             playbook: playbook.as_ref(),
             fetch: *fetch,
             stacktrace: *stacktrace,
+            default_image_config: template_resolver.default_image_config(),
             log_level: log_level.clone().unwrap_or_default(),
         }),
+        CliCommands::Structurizr { command } => match command {
+            StructurizrCommands::Local { host_port } => run_structurizr_local(
+                project_dir,
+                template_resolver.default_image_config(),
+                *host_port,
+            ),
+            StructurizrCommands::ExportDiagrams { format } => run_export_structurizr_diagrams(
+                project_dir,
+                template_resolver.default_image_config(),
+                format.as_ref(),
+            ),
+        },
     }
 }

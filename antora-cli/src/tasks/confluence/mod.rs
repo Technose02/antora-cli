@@ -9,7 +9,7 @@ use antora_process::{
     },
 };
 use antora_project::antora_configuration::{
-    AntoraConfiguration, ConfluenceConfig, ImageConfig, OrphanRemovalStrategy, PlaybookConfig,
+    AntoraConfiguration, ConfluenceConfig, OrphanRemovalStrategy, PlaybookConfig,
 };
 use relative_path::Filename;
 
@@ -68,7 +68,7 @@ pub fn run(confluence_args: ConfluenceArgs) {
             println!("warning: no antora-config found, using defaults");
             AntoraConfiguration {
                 playbook: PlaybookConfig::default(),
-                antora_image: ImageConfig::default(),
+                antora_image: confluence_args.default_image_config,
                 confluence: None,
             }
         }

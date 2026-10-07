@@ -81,7 +81,7 @@ impl ProcessBuilder {
         } else {
             Stdio::null()
         });
-        cmd.stderr(if self.stdout.is_some() {
+        cmd.stderr(if self.stderr.is_some() {
             Stdio::piped()
         } else {
             Stdio::null()

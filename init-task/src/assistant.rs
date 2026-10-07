@@ -1,3 +1,4 @@
+use crate::TemplateResolver;
 use antora_fs::DEFAULT_CONTENT_SOURCE_ROOT;
 use antora_project::{Error as AntoraTypesError, component_name::ComponentName};
 use relative_path::{Dirname, RelativeDir, create_relative_dir_from_dirname};
@@ -14,7 +15,6 @@ pub enum ValidationResult {
 
 enum EmptyRule {
     Cancel,
-    #[expect(unused)]
     Default(String),
     Valid,
 }
@@ -107,6 +107,7 @@ pub struct InitAssistant<'a> {
     provided_component_name: Option<&'a String>,
     provided_component_title: Option<&'a String>,
     provided_playbook_site_title: Option<&'a String>,
+    provided_init_template_key: Option<&'a String>,
 }
 
 impl<'a, 'e> InitAssistant<'a>
@@ -120,6 +121,7 @@ where
             provided_component_name: None,
             provided_component_title: None,
             provided_playbook_site_title: None,
+            provided_init_template_key: None,
         }
     }
 
@@ -155,7 +157,43 @@ where
         self
     }
 
-    pub fn process_exitting_eventually(self) -> InitAssistantResults {
+    pub fn with_provided_init_template_key(
+        &mut self,
+        provided_init_template_key: Option<&'e String>,
+    ) -> &mut Self {
+        self.provided_init_template_key = provided_init_template_key;
+        self
+    }
+
+    fn create_invalid_init_template_key_error_message(
+        template_resolver: &dyn TemplateResolver,
+        init_template_key: impl AsRef<str>,
+    ) -> String {
+        format!(
+            r#"error: init-template-key '{}' is not valid
+
+Valid init-template-keys are:
+{}"#,
+            init_template_key.as_ref(),
+            template_resolver.valid_keys().join(",")
+        )
+    }
+
+    pub fn process_exitting_eventually(
+        self,
+        template_resolver: &dyn TemplateResolver,
+    ) -> InitAssistantResults {
+        // first: check if there was an invalid template-key provided and exit eventually
+        if let Some(key) = self.provided_init_template_key
+            && !template_resolver.valid_keys().contains(key)
+        {
+            eprintln!(
+                "{}",
+                Self::create_invalid_init_template_key_error_message(template_resolver, key)
+            );
+            exit(1);
+        }
+
         // process component_name
         let component_name = match (self.interactive, self.provided_component_name) {
             (false, None) => {
@@ -210,11 +248,33 @@ where
             }
         };
 
+        let init_template_key = self.provided_init_template_key.map(String::to_owned).unwrap_or_else(|| {
+            prompt_for_value(
+                &format!(
+                    "please enter the key of the init-template to use (or nothing to default to init-template '{}'):", template_resolver.default_key()
+                ),
+                |init_template_key_candidate| {
+                    if init_template_key_candidate.is_empty() {
+                        ValidationResult::Empty
+                    } else {
+                        if template_resolver.valid_keys().contains(init_template_key_candidate) {
+                            ValidationResult::Valid
+                        } else {
+                            ValidationResult::Invalid(
+                                Self::create_invalid_init_template_key_error_message(template_resolver, init_template_key_candidate))
+                        }
+                    }
+                },
+                EmptyRule::Default(template_resolver.default_key().to_owned()),
+            )
+        });
+
         InitAssistantResults {
             component_name,
             component_title,
             content_source_root,
             playbook_site_title,
+            init_template_key,
         }
     }
 }
@@ -225,6 +285,7 @@ pub struct InitAssistantResults {
     component_title: String,
     content_source_root: RelativeDir,
     playbook_site_title: String,
+    init_template_key: String,
 }
 
 impl InitAssistantResults {
@@ -239,5 +300,8 @@ impl InitAssistantResults {
     }
     pub fn playbook_site_title(&self) -> &str {
         self.playbook_site_title.as_str()
+    }
+    pub fn init_template_key(&self) -> &str {
+        self.init_template_key.as_str()
     }
 }

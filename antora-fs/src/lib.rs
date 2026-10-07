@@ -13,4 +13,6 @@ pub const ANTORA_BUILD_DIR: &str = "antora-build";
 
 pub use error::{Error, Result};
 pub use helpers::read_antora_secrets_from_dir;
-pub use model::{ComponentHandle, ModuleHandle, NormalizePath, ProjectInitDir, Resource, Vfs};
+pub use model::{
+    ComponentHandle, ModuleHandle, NormalizePath, ProjectInitDir, Resource, ResourceFile, Vfs,
+};

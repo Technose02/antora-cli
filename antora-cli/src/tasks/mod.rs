@@ -1,13 +1,18 @@
 use antora_fs::ANTORA_CACHE_DIR;
-use antora_project::antora_playbook::AntoraPlaybook;
+use antora_project::{antora_configuration::ImageConfig, antora_playbook::AntoraPlaybook};
 use std::fmt::Display;
 
 mod confluence;
-mod init;
+//mod init;
 mod site;
+mod structurizr;
 pub use confluence::run as run_confluence;
-pub use init::run as run_init;
 pub use site::run as run_site;
+
+pub use structurizr::{
+    STRUCTURIZR_CONTAINER_PORT, run_export_diagrams as run_export_structurizr_diagrams,
+    run_local as run_structurizr_local,
+};
 
 #[derive(Default, Clone)]
 pub enum AntoraLogLevel {
@@ -54,16 +59,40 @@ impl From<&str> for AntoraLogLevel {
     }
 }
 
-pub struct InitArgs<'cli> {
-    pub(crate) project_dir: Option<&'cli String>,
-    pub(crate) non_interactive_flag: bool,
-    pub(crate) include_scaffolding: bool,
-    pub(crate) provided_docs_dir: Option<&'cli String>,
-    pub(crate) provided_component_name: Option<&'cli String>,
-    pub(crate) provided_component_title: Option<&'cli String>,
-    pub(crate) provided_component_version: Option<&'cli String>,
-    pub(crate) provided_playbook_site_title: Option<&'cli String>,
-    pub(crate) export_pdf: bool,
+#[derive(Debug, Default, Clone)]
+pub enum ExportFormat {
+    #[default]
+    Png,
+    Svg,
+}
+
+impl AsRef<str> for ExportFormat {
+    fn as_ref(&self) -> &str {
+        match self {
+            ExportFormat::Png => "png",
+            ExportFormat::Svg => "svg",
+        }
+    }
+}
+
+impl Display for ExportFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+impl From<&str> for ExportFormat {
+    fn from(value: &str) -> Self {
+        match value.to_ascii_lowercase().as_str() {
+            "png" => ExportFormat::Png,
+            "svg" => ExportFormat::Svg,
+            other => {
+                let ret = ExportFormat::default();
+                eprintln!("invalid export-format '{other}'; using default ('{ret}')");
+                ret
+            }
+        }
+    }
 }
 
 pub struct SiteArgs<'cli> {
@@ -72,6 +101,7 @@ pub struct SiteArgs<'cli> {
     pub(crate) fetch: bool,
     pub(crate) stacktrace: bool,
     pub(crate) log_level: AntoraLogLevel,
+    pub(crate) default_image_config: ImageConfig,
     pub(crate) open: bool,
 }
 
@@ -81,6 +111,7 @@ pub struct ConfluenceArgs<'cli> {
     pub(crate) fetch: bool,
     pub(crate) stacktrace: bool,
     pub(crate) log_level: AntoraLogLevel,
+    pub(crate) default_image_config: ImageConfig,
 }
 
 fn get_antora_cache_dir(playbook: Option<&AntoraPlaybook>) -> String {

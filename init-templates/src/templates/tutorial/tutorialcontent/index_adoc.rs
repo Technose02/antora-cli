@@ -1,16 +1,23 @@
-use crate::tasks::init::assistant::InitAssistantResults;
 use antora_fs::Resource;
 use antora_project::component_version::ComponentVersion;
+use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
-// scaffolding/pages/index.adoc
-pub fn relative_file() -> RelativeFile {
+// tutorial/pages/index.adoc
+pub fn resource_file(
+    results: &InitAssistantResults,
+    component_version: &ComponentVersion,
+) -> (RelativeFile, Resource) {
+    (relative_file(), content(results, component_version))
+}
+
+fn relative_file() -> RelativeFile {
     "index.adoc"
         .try_into()
         .expect("index.adoc is a valid filename")
 }
 
-pub fn content(results: &InitAssistantResults, component_version: &ComponentVersion) -> Resource {
+fn content(results: &InitAssistantResults, component_version: &ComponentVersion) -> Resource {
     let component_name = results.component_name().as_ref();
     let component_title = results.component_title();
 
@@ -23,8 +30,8 @@ Es enthält Beispiele, Erklärungen und Tipps zu Antora und AsciiDoc.
 
 Sobald Sie Ihre Dokumentation aufgebaut haben, können Sie dieses Modul einfach entfernen:
 
-- Löschen Sie das Verzeichnis `modules/scaffolding`
-- Entfernen Sie den entsprechenden Navigations-Verweis `modules/scaffolding/nav.adoc` in Ihrem _Component-Version-Descriptor_ (`antora.yml`)
+- Löschen Sie das Verzeichnis `modules/tutorial`
+- Entfernen Sie den entsprechenden Navigations-Verweis `modules/tutorial/nav.adoc` in Ihrem _Component-Version-Descriptor_ (`antora.yml`)
 
 Viel Erfolg!
 

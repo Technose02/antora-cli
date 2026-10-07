@@ -1,6 +1,6 @@
 use crate::{
     ANTORA_CONFIGURATION, ANTORA_SECRETS_CONFIGURATION, COMPONENT_VERSION_DESCRIPTOR,
-    ComponentHandle, Error, GITIGNORE, ProjectInitDir, Resource, Result,
+    ComponentHandle, Error, GITIGNORE, ProjectInitDir, Resource, ResourceFile, Result,
 };
 use antora_project::{
     component_name::ComponentName, component_version::ComponentVersion,
@@ -51,30 +51,31 @@ impl From<&ProjectInitDir> for Vfs {
 }
 
 impl Vfs {
-    pub fn write_project_resource(&self, relative_file: RelativeFile, resource: Resource) {
-        self.write_resource(relative_file, resource, WriteMode::IfNotExist);
+    //pub fn write_project_resource(&self, relative_file: RelativeFile, resource: Resource) {
+    //    self.write_resource(relative_file, resource, WriteMode::IfNotExist);
+    //}
+    pub fn write_project_resource(&self, resource_file: impl ResourceFile) {
+        self.write_resource(resource_file, WriteMode::IfNotExist);
     }
 
-    pub(crate) fn write_resource(
-        &self,
-        relative_file: RelativeFile,
-        resource: Resource,
-        mode: WriteMode,
-    ) {
+    pub(crate) fn write_resource(&self, resource_file: impl ResourceFile, mode: WriteMode) {
         let mut pb = self.root.clone();
-        let relative_file: PathBuf = relative_file.into();
+        let p = resource_file.path();
+        let relative_file: PathBuf = p.clone().into();
         pb.push(&relative_file);
 
         self.files
             .lock()
             .expect("locking must succeed")
-            .insert(pb, (resource, mode));
+            .insert(pb, (resource_file.content().clone(), mode));
     }
 
     pub fn write_antora_secrets_configuration(&self, contents: String) -> &Self {
         self.write_resource(
-            create_relative_file_from_filename(ANTORA_SECRETS_CONFIGURATION_FILENAME.clone()),
-            Resource::TextBased(contents),
+            (
+                create_relative_file_from_filename(ANTORA_SECRETS_CONFIGURATION_FILENAME.clone()),
+                Resource::TextBased(contents),
+            ),
             WriteMode::IfNotExist,
         );
 
@@ -83,8 +84,10 @@ impl Vfs {
 
     pub fn write_antora_configuration(&self, contents: String) -> &Self {
         self.write_resource(
-            create_relative_file_from_filename(ANTORA_CONFIGURATION_FILENAME.clone()),
-            Resource::TextBased(contents),
+            (
+                create_relative_file_from_filename(ANTORA_CONFIGURATION_FILENAME.clone()),
+                Resource::TextBased(contents),
+            ),
             WriteMode::IfNotExist,
         );
 
@@ -105,8 +108,10 @@ impl Vfs {
     ) -> &Self {
         content_source_root.push_dir(component_version_descriptor.name().clone().into());
         self.write_resource(
-            content_source_root.push_file(COMPONENT_VERSION_DESCRIPTOR_FILENAME.clone()),
-            Resource::TextBased(component_version_descriptor.to_string()),
+            (
+                content_source_root.push_file(COMPONENT_VERSION_DESCRIPTOR_FILENAME.clone()),
+                Resource::TextBased(component_version_descriptor.to_string()),
+            ),
             WriteMode::IfNotExist,
         );
         self
@@ -114,8 +119,7 @@ impl Vfs {
 
     pub fn write_antora_playbook_as(&self, relative_file: RelativeFile, contents: String) -> &Self {
         self.write_resource(
-            relative_file,
-            Resource::TextBased(contents),
+            (relative_file, Resource::TextBased(contents)),
             WriteMode::IfNotExist,
         );
 
@@ -124,8 +128,10 @@ impl Vfs {
 
     pub fn write_gitignore(&self, contents: String) -> &Self {
         self.write_resource(
-            create_relative_file_from_filename(GITIGNORE_FILENAME.clone()),
-            Resource::TextBased(contents),
+            (
+                create_relative_file_from_filename(GITIGNORE_FILENAME.clone()),
+                Resource::TextBased(contents),
+            ),
             WriteMode::OrAppend,
         );
 

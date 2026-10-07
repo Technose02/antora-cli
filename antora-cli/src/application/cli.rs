@@ -1,5 +1,4 @@
-use crate::tasks::AntoraLogLevel;
-
+use crate::tasks::{AntoraLogLevel, ExportFormat};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -27,10 +26,6 @@ pub enum CliCommands {
         #[arg(short = 'n', long, value_name = "FLAG")]
         non_interactive: bool,
 
-        /// set to include extra-contents on asciidoc and antora to help you getting started
-        #[arg(short = 's', long, value_name = "FLAG")]
-        scaffolding: bool,
-
         /// the content-source-root for your component (default: 'docs')
         #[arg(short = 'r', long, value_name = "DIR")]
         content_source_root: Option<String>,
@@ -50,6 +45,10 @@ pub enum CliCommands {
         /// the title of the site defined in your playbook (prompts for value in interactive-mode or defaults to component's title)
         #[arg(long, value_name = "SITE-TITLE")]
         playbook_site_title: Option<String>,
+
+        /// the key of the template to use for initialization
+        #[arg(short = 'k', long, value_name = "TEMPLATE-KEY")]
+        init_template_key: Option<String>,
 
         /// set to add pdf-export to your project (will add the extension to the playbook and create a default config-file)
         #[arg(short = 'p', long, value_name = "FLAG")]
@@ -98,5 +97,25 @@ pub enum CliCommands {
         /// adjust antora log-level (one of "fatal","error","warn","info","debug","all" or "silent" - default: "warn")
         #[arg(short = 'l', long, value_name = "ANTORALOGLEVEL")]
         log_level: Option<AntoraLogLevel>,
+    },
+
+    #[command(about = "runs structurizr (further commands need to follow)", long_about = None)]
+    Structurizr {
+        #[command(subcommand)]
+        command: StructurizrCommands,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum StructurizrCommands {
+    #[command(about = "runs a local structurizr instance", long_about=None)]
+    Local {
+        #[arg(short = 'p', long, value_name = "HOST_PORT")]
+        host_port: Option<u16>,
+    },
+    #[command(about = "exports diagrams from a given workspace using playwright", long_about = None)]
+    ExportDiagrams {
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<ExportFormat>,
     },
 }

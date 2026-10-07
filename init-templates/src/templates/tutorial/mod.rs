@@ -1,7 +1,6 @@
-use super::{InitAssistantResults, Template, Vfs};
-use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR};
+use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR, ANTORA_SECRETS_CONFIGURATION, Vfs};
 use antora_project::{
-    antora_configuration::{AntoraConfiguration, ImageConfig, PlaybookConfig},
+    antora_configuration::{AntoraConfiguration, PlaybookConfig},
     antora_playbook::{
         AntoraExtensionBuilder, AntoraPlaybook, AntoraPlaybookBuilder, AntoraSectionBuilder,
         AsciidocSectionBuilder, AttributeValue, ContentSectionBuilder, ContentSourceBuilder,
@@ -17,34 +16,45 @@ use antora_project::{
     module_name::{ModuleName, ROOT_MODULE},
     resource_id::{ResourceId, ResourceIdDetailLevel},
 };
+use init_task::{InitAssistantResults, Template, TemplateResolver};
 use relative_path::RelativeDir;
 
 mod antora_assembler_pdf_yml;
 mod index_adoc;
-mod scaffolding;
-//mod pdf_theme_yml;
+mod pdf_theme_yml;
+mod tutorialcontent;
 
-pub struct Basic {
+pub struct TutorialTemplate {
     init_assistant_results: InitAssistantResults,
     component_version: ComponentVersion,
     cached_component_version_descriptor: Option<ComponentVersionDescriptor>,
     cached_playbook: Option<AntoraPlaybook>,
-    include_scaffolding: bool,
 }
 
-impl Basic {
+impl TutorialTemplate {
     pub fn new(
         init_assistant_results: &InitAssistantResults,
-        component_version: ComponentVersion,
-        include_scaffolding: bool,
+        component_version: &ComponentVersion,
     ) -> Self {
         Self {
             init_assistant_results: init_assistant_results.clone(),
-            component_version,
+            component_version: component_version.clone(),
             cached_component_version_descriptor: None,
             cached_playbook: None,
-            include_scaffolding,
         }
+    }
+
+    pub fn with_cached_component_version_descriptor(
+        &mut self,
+        cached_component_version_descriptor: ComponentVersionDescriptor,
+    ) -> &mut Self {
+        self.cached_component_version_descriptor = Some(cached_component_version_descriptor);
+        self
+    }
+
+    pub fn with_cached_playbook(&mut self, cached_playbook: AntoraPlaybook) -> &mut Self {
+        self.cached_playbook = Some(cached_playbook);
+        self
     }
 
     fn create_playbook(
@@ -176,12 +186,12 @@ impl Basic {
                                     .push(
                                         ScanValueMap::new(project_dir.as_str())
                                             .files("antora-playbook.yml")
-                                            .into("modules/scaffolding/examples/collected"),
+                                            .into("modules/tutorial/examples/collected"),
                                     )
                                     .push(
                                         ScanValueMap::new(component_root_dir.as_str())
                                             .files("antora.yml")
-                                            .into("modules/scaffolding/examples/collected"),
+                                            .into("modules/tutorial/examples/collected"),
                                     )
                                     .build(),
                             )
@@ -195,7 +205,19 @@ impl Basic {
     }
 }
 
-impl Template for Basic {
+impl Template for TutorialTemplate {
+    fn get_gitignore_content(&self) -> String {
+        format!(
+            r#"
+# rules for antora
+/**/.venv
+{ANTORA_CACHE_DIR}/
+{ANTORA_BUILD_DIR}/
+{ANTORA_SECRETS_CONFIGURATION}
+"#,
+        )
+    }
+
     fn process(&mut self, vfs: &Vfs, pdf_target: bool) {
         // create start_path for content
         let mut content_source_start_path =
@@ -224,14 +246,10 @@ impl Template for Basic {
         module.init_all_family_directories();
 
         // write content to registered module
-        let start_page_id = module.write_page(
-            index_adoc::relative_file(),
-            index_adoc::content(
-                &self.init_assistant_results,
-                &self.component_version,
-                self.include_scaffolding,
-            ),
-        );
+        let start_page_id = module.write_page(index_adoc::resource_file(
+            &self.init_assistant_results,
+            &self.component_version,
+        ));
 
         let nav_file_path = module.write_nav(format!(
             "* xref:{}[Start]",
@@ -240,64 +258,35 @@ impl Template for Basic {
 
         component_version_descriptor.with_nav(nav_file_path);
 
-        if self.include_scaffolding {
-            let scaffolding_module = component.register_module(
-                ModuleName::try_from("scaffolding").expect("scaffolding is a valid ModuleName"),
-            );
-            scaffolding_module.init_all_family_directories();
-            let index_adoc_id = scaffolding_module.write_page(
-                scaffolding::index_adoc_relative_file(),
-                scaffolding::index_adoc_content(
-                    &self.init_assistant_results,
-                    &self.component_version,
-                ),
-            );
-            let antora_concepts_adoc_id = scaffolding_module.write_page(
-                scaffolding::antora_concepts_adoc_relative_file(),
-                scaffolding::antora_concepts_adoc_content(&self.init_assistant_results),
-            );
-            let asciidoc_intro_adoc_id = scaffolding_module.write_page(
-                scaffolding::asciidoc_intro_adoc_relative_file(),
-                scaffolding::asciidoc_intro_adoc_content(),
-            );
-            let diagrams_adoc_id = scaffolding_module.write_page(
-                scaffolding::diagrams_adoc_relative_file(),
-                scaffolding::diagrams_adoc_content(),
-            );
-            scaffolding_module.write_example(
-                scaffolding::antora_yml_placeholder_relative_file(),
-                scaffolding::antora_yml_placeholder_content(),
-            );
-            scaffolding_module.write_example(
-                scaffolding::antora_playbook_placeholder_relative_file(),
-                scaffolding::antora_playbook_placeholder_content(),
-            );
-            scaffolding_module.write_image(
-                scaffolding::abbildung_svg_relative_file(),
-                scaffolding::abbildung_svg_content(),
-            );
-            scaffolding_module.write_image(
-                scaffolding::flowchart_mmd_relative_file(),
-                scaffolding::flowchart_mmd_content(),
-            );
-            scaffolding_module.write_image(
-                scaffolding::sequence_puml_relative_file(),
-                scaffolding::sequence_puml_content(),
-            );
-            scaffolding_module.write_partial(
-                scaffolding::sample_table_relative_file(),
-                scaffolding::sample_table_content(),
-            );
-            let scaffolding_nav_file_path = scaffolding_module.write_nav(format!(
-                r#"* xref:{}[Scaffolding]
+        let tutorial_module = component.register_module(
+            ModuleName::try_from("tutorial").expect("tutorial is a valid ModuleName"),
+        );
+        tutorial_module.init_all_family_directories();
+        let index_adoc_id = tutorial_module.write_page(tutorialcontent::index_adoc(
+            &self.init_assistant_results,
+            &self.component_version,
+        ));
+        let antora_concepts_adoc_id = tutorial_module.write_page(
+            tutorialcontent::antora_concepts_adoc(&self.init_assistant_results),
+        );
+        let asciidoc_intro_adoc_id =
+            tutorial_module.write_page(tutorialcontent::asciidoc_intro_adoc());
+        let diagrams_adoc_id = tutorial_module.write_page(tutorialcontent::diagrams_adoc());
+        tutorial_module.write_example(tutorialcontent::antora_yml_placeholder());
+        tutorial_module.write_example(tutorialcontent::antora_playbook_placeholder());
+        tutorial_module.write_image(tutorialcontent::abbildung_svg());
+        tutorial_module.write_image(tutorialcontent::flowchart_mmd());
+        tutorial_module.write_image(tutorialcontent::sequence_puml());
+        tutorial_module.write_partial(tutorialcontent::sample_table());
+
+        let tutorial_nav_file_path = tutorial_module.write_nav(format!(
+            r#"* xref:{}[Tutorial]
 ** xref:{}[Antora-Konzepte]
 ** xref:{}[AsciiDoc-Intro]
 *** xref:{}[Diagramme]"#,
-                index_adoc_id, antora_concepts_adoc_id, asciidoc_intro_adoc_id, diagrams_adoc_id
-            ));
-
-            component_version_descriptor.with_nav(scaffolding_nav_file_path);
-        }
+            index_adoc_id, antora_concepts_adoc_id, asciidoc_intro_adoc_id, diagrams_adoc_id
+        ));
+        component_version_descriptor.with_nav(tutorial_nav_file_path);
 
         self.cached_playbook = Some(Self::create_playbook(
             start_page_id,
@@ -310,18 +299,21 @@ impl Template for Basic {
         self.cached_component_version_descriptor = Some(component_version_descriptor);
 
         if pdf_target {
-            vfs.write_project_resource(
+            vfs.write_project_resource((
                 antora_assembler_pdf_yml::relative_file(),
                 antora_assembler_pdf_yml::content(),
-            );
-            //vfs.write_project_resource(pdf_theme_yml::relative_file(), pdf_theme_yml::content());
+            ));
+            vfs.write_project_resource((pdf_theme_yml::relative_file(), pdf_theme_yml::content()));
         }
     }
 
-    fn get_antora_configuration(&self) -> AntoraConfiguration {
+    fn get_antora_configuration(
+        &self,
+        template_resolver: &dyn TemplateResolver,
+    ) -> AntoraConfiguration {
         AntoraConfiguration {
             playbook: PlaybookConfig::default(),
-            antora_image: ImageConfig::default(),
+            antora_image: template_resolver.default_image_config(),
             confluence: None,
         }
     }
