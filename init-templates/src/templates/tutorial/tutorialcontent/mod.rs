@@ -12,26 +12,17 @@ mod index_adoc;
 mod sample_table;
 mod sequence_puml;
 
-pub(super) use abbildung_svg::content as abbildung_svg_content;
-pub(super) use abbildung_svg::relative_file as abbildung_svg_relative_file;
-pub(super) use antora_concepts_adoc::content as antora_concepts_adoc_content;
-pub(super) use antora_concepts_adoc::relative_file as antora_concepts_adoc_relative_file;
-pub(super) use antora_playbook_placeholder::content as antora_playbook_placeholder_content;
-pub(super) use antora_playbook_placeholder::relative_file as antora_playbook_placeholder_relative_file;
-pub(super) use antora_yml_placeholder::content as antora_yml_placeholder_content;
-pub(super) use antora_yml_placeholder::relative_file as antora_yml_placeholder_relative_file;
-pub(super) use asciidoc_intro_adoc::content as asciidoc_intro_adoc_content;
-pub(super) use asciidoc_intro_adoc::relative_file as asciidoc_intro_adoc_relative_file;
-pub(super) use diagrams_adoc::content as diagrams_adoc_content;
-pub(super) use diagrams_adoc::relative_file as diagrams_adoc_relative_file;
-pub(super) use flowchart_mmd::content as flowchart_mmd_content;
-pub(super) use flowchart_mmd::relative_file as flowchart_mmd_relative_file;
-pub(super) use index_adoc::content as index_adoc_content;
-pub(super) use index_adoc::relative_file as index_adoc_relative_file;
-pub(super) use sample_table::content as sample_table_content;
-pub(super) use sample_table::relative_file as sample_table_relative_file;
-pub(super) use sequence_puml::content as sequence_puml_content;
-pub(super) use sequence_puml::relative_file as sequence_puml_relative_file;
+pub(super) use abbildung_svg::resource_file as abbildung_svg;
+pub(super) use antora_concepts_adoc::resource_file as antora_concepts_adoc;
+pub(super) use antora_playbook_placeholder::resource_file as antora_playbook_placeholder;
+pub(super) use antora_yml_placeholder::resource_file as antora_yml_placeholder;
+pub(super) use asciidoc_intro_adoc::resource_file as asciidoc_intro_adoc;
+pub(super) use diagrams_adoc::resource_file as diagrams_adoc;
+pub(super) use flowchart_mmd::resource_file as flowchart_mmd;
+pub(super) use index_adoc::resource_file as index_adoc;
+pub(super) use sample_table::resource_file as sample_table;
+
+pub(super) use sequence_puml::resource_file as sequence_puml;
 
 fn placeholder_content() -> Resource {
     Resource::TextBased(String::from(

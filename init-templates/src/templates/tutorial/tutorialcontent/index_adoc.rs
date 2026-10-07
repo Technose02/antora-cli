@@ -4,13 +4,20 @@ use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
 // tutorial/pages/index.adoc
-pub fn relative_file() -> RelativeFile {
+pub fn resource_file(
+    results: &InitAssistantResults,
+    component_version: &ComponentVersion,
+) -> (RelativeFile, Resource) {
+    (relative_file(), content(results, component_version))
+}
+
+fn relative_file() -> RelativeFile {
     "index.adoc"
         .try_into()
         .expect("index.adoc is a valid filename")
 }
 
-pub fn content(results: &InitAssistantResults, component_version: &ComponentVersion) -> Resource {
+fn content(results: &InitAssistantResults, component_version: &ComponentVersion) -> Resource {
     let component_name = results.component_name().as_ref();
     let component_title = results.component_title();
 

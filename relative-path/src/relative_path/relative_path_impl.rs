@@ -17,6 +17,12 @@ pub struct RelativePath<T> {
     pub(crate) kind: T,
 }
 
+impl<C: FnOnce() -> RelativeFile> From<C> for RelativeFile {
+    fn from(value: C) -> Self {
+        value()
+    }
+}
+
 impl Default for RelativeDir {
     fn default() -> Self {
         Self {

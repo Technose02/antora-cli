@@ -205,10 +205,10 @@ impl Template for BasicTemplate {
         module.init_all_family_directories();
 
         // write content to registered module
-        let start_page_id = module.write_page(
-            index_adoc::relative_file(),
-            index_adoc::content(&self.init_assistant_results, &self.component_version),
-        );
+        let start_page_id = module.write_page(index_adoc::resource_file(
+            &self.init_assistant_results,
+            &self.component_version,
+        ));
 
         let nav_file_path = module.write_nav(format!(
             "* xref:{}[Start]",
@@ -228,13 +228,10 @@ impl Template for BasicTemplate {
         self.cached_component_version_descriptor = Some(component_version_descriptor);
 
         if pdf_target {
-            vfs.write_project_resource(
-                (
-                    antora_assembler_pdf_yml::relative_file(),
-                    antora_assembler_pdf_yml::content(),
-                )
-                    .into(),
-            );
+            vfs.write_project_resource((
+                antora_assembler_pdf_yml::relative_file(),
+                antora_assembler_pdf_yml::content(),
+            ));
         }
     }
 

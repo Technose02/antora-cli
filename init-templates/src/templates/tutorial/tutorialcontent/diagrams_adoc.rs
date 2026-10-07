@@ -2,15 +2,13 @@ use antora_fs::Resource;
 use relative_path::RelativeFile;
 
 // tutorial/pages/diagrams.adoc
-pub fn relative_file() -> RelativeFile {
-    "diagrams.adoc"
-        .try_into()
-        .expect("diagrams.adoc is a valid filename")
-}
-
-pub fn content() -> Resource {
-    Resource::TextBased(String::from(
-        r#"= Diagramme in AsciiDoc
+pub fn resource_file() -> (RelativeFile, Resource) {
+    (
+        "diagrams.adoc"
+            .try_into()
+            .expect("diagrams.adoc is a valid filename"),
+        Resource::TextBased(String::from(
+            r#"= Diagramme in AsciiDoc
 
 Neben der Einbindung von Abbildungen als statische Dateien (``svg``,``png``, etc.) unterstützt AsciiDoc diverse __Diagrams-As-Code-DSL__s wie z.B. ``plantUML`` und ``mermaid``.
 
@@ -79,5 +77,6 @@ Weiter Informationen::
 * https://plantuml.com/de/
 * https://mermaid.js.org/
 "#,
-    ))
+        )),
+    )
 }

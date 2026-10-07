@@ -246,10 +246,10 @@ impl Template for TutorialTemplate {
         module.init_all_family_directories();
 
         // write content to registered module
-        let start_page_id = module.write_page(
-            index_adoc::relative_file(),
-            index_adoc::content(&self.init_assistant_results, &self.component_version),
-        );
+        let start_page_id = module.write_page(index_adoc::resource_file(
+            &self.init_assistant_results,
+            &self.component_version,
+        ));
 
         let nav_file_path = module.write_nav(format!(
             "* xref:{}[Start]",
@@ -262,49 +262,23 @@ impl Template for TutorialTemplate {
             ModuleName::try_from("tutorial").expect("tutorial is a valid ModuleName"),
         );
         tutorial_module.init_all_family_directories();
-        let index_adoc_id = tutorial_module.write_page(
-            tutorialcontent::index_adoc_relative_file(),
-            tutorialcontent::index_adoc_content(
-                &self.init_assistant_results,
-                &self.component_version,
-            ),
-        );
+        let index_adoc_id = tutorial_module.write_page(tutorialcontent::index_adoc(
+            &self.init_assistant_results,
+            &self.component_version,
+        ));
         let antora_concepts_adoc_id = tutorial_module.write_page(
-            tutorialcontent::antora_concepts_adoc_relative_file(),
-            tutorialcontent::antora_concepts_adoc_content(&self.init_assistant_results),
+            tutorialcontent::antora_concepts_adoc(&self.init_assistant_results),
         );
-        let asciidoc_intro_adoc_id = tutorial_module.write_page(
-            tutorialcontent::asciidoc_intro_adoc_relative_file(),
-            tutorialcontent::asciidoc_intro_adoc_content(),
-        );
-        let diagrams_adoc_id = tutorial_module.write_page(
-            tutorialcontent::diagrams_adoc_relative_file(),
-            tutorialcontent::diagrams_adoc_content(),
-        );
-        tutorial_module.write_example(
-            tutorialcontent::antora_yml_placeholder_relative_file(),
-            tutorialcontent::antora_yml_placeholder_content(),
-        );
-        tutorial_module.write_example(
-            tutorialcontent::antora_playbook_placeholder_relative_file(),
-            tutorialcontent::antora_playbook_placeholder_content(),
-        );
-        tutorial_module.write_image(
-            tutorialcontent::abbildung_svg_relative_file(),
-            tutorialcontent::abbildung_svg_content(),
-        );
-        tutorial_module.write_image(
-            tutorialcontent::flowchart_mmd_relative_file(),
-            tutorialcontent::flowchart_mmd_content(),
-        );
-        tutorial_module.write_image(
-            tutorialcontent::sequence_puml_relative_file(),
-            tutorialcontent::sequence_puml_content(),
-        );
-        tutorial_module.write_partial(
-            tutorialcontent::sample_table_relative_file(),
-            tutorialcontent::sample_table_content(),
-        );
+        let asciidoc_intro_adoc_id =
+            tutorial_module.write_page(tutorialcontent::asciidoc_intro_adoc());
+        let diagrams_adoc_id = tutorial_module.write_page(tutorialcontent::diagrams_adoc());
+        tutorial_module.write_example(tutorialcontent::antora_yml_placeholder());
+        tutorial_module.write_example(tutorialcontent::antora_playbook_placeholder());
+        tutorial_module.write_image(tutorialcontent::abbildung_svg());
+        tutorial_module.write_image(tutorialcontent::flowchart_mmd());
+        tutorial_module.write_image(tutorialcontent::sequence_puml());
+        tutorial_module.write_partial(tutorialcontent::sample_table());
+
         let tutorial_nav_file_path = tutorial_module.write_nav(format!(
             r#"* xref:{}[Tutorial]
 ** xref:{}[Antora-Konzepte]
@@ -312,7 +286,6 @@ impl Template for TutorialTemplate {
 *** xref:{}[Diagramme]"#,
             index_adoc_id, antora_concepts_adoc_id, asciidoc_intro_adoc_id, diagrams_adoc_id
         ));
-
         component_version_descriptor.with_nav(tutorial_nav_file_path);
 
         self.cached_playbook = Some(Self::create_playbook(
@@ -326,16 +299,11 @@ impl Template for TutorialTemplate {
         self.cached_component_version_descriptor = Some(component_version_descriptor);
 
         if pdf_target {
-            vfs.write_project_resource(
-                (
-                    antora_assembler_pdf_yml::relative_file(),
-                    antora_assembler_pdf_yml::content(),
-                )
-                    .into(),
-            );
-            vfs.write_project_resource(
-                (pdf_theme_yml::relative_file(), pdf_theme_yml::content()).into(),
-            );
+            vfs.write_project_resource((
+                antora_assembler_pdf_yml::relative_file(),
+                antora_assembler_pdf_yml::content(),
+            ));
+            vfs.write_project_resource((pdf_theme_yml::relative_file(), pdf_theme_yml::content()));
         }
     }
 

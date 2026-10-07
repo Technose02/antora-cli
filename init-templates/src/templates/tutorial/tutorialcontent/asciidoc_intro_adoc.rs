@@ -2,15 +2,13 @@ use antora_fs::Resource;
 use relative_path::RelativeFile;
 
 // tutorial/pages/asciidoc-intro.adoc
-pub fn relative_file() -> RelativeFile {
-    "asciidoc-intro.adoc"
-        .try_into()
-        .expect("asciidoc-intro.adoc is a valid filename")
-}
-
-pub fn content() -> Resource {
-    Resource::TextBased(String::from(
-        r#"= Einführung in AsciiDoc
+pub fn resource_file() -> (RelativeFile, Resource) {
+    (
+        "asciidoc-intro.adoc"
+            .try_into()
+            .expect("asciidoc-intro.adoc is a valid filename"),
+        Resource::TextBased(String::from(
+            r#"= Einführung in AsciiDoc
 
 AsciiDoc ist eine leicht zu erlernende Auszeichnungssprache für technische Dokumentation.
 
@@ -180,5 +178,6 @@ ____
 Weitere Informationen::
 * https://docs.asciidoctor.org/asciidoc/latest/
 "#,
-    ))
+        )),
+    )
 }

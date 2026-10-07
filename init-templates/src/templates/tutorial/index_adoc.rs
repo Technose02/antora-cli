@@ -3,13 +3,20 @@ use antora_project::component_version::ComponentVersion;
 use init_task::InitAssistantResults;
 use relative_path::RelativeFile;
 
-pub(super) fn relative_file() -> RelativeFile {
+pub(super) fn resource_file(
+    results: &InitAssistantResults,
+    component_version: &ComponentVersion,
+) -> (RelativeFile, Resource) {
+    (relative_file(), content(results, component_version))
+}
+
+fn relative_file() -> RelativeFile {
     "index.adoc"
         .try_into()
         .expect("is a valid relative-path to a file")
 }
 
-pub fn content(results: &InitAssistantResults, component_version: &ComponentVersion) -> Resource {
+fn content(results: &InitAssistantResults, component_version: &ComponentVersion) -> Resource {
     let component_name = results.component_name().as_ref();
     let component_title = results.component_title();
     let remove_tutorial_note = r#"====
