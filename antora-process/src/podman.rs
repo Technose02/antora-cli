@@ -120,7 +120,9 @@ pub fn run_structurizr_local(dir: &Path, image_tag: &str, host_port: u16) -> Pro
     pb.with_arg("-p").with_arg(format!("{}:8080", host_port));
     pb.with_arg("-v").with_arg(".:/antora:Z");
     pb.with_arg(image_tag);
-    pb.with_arg("structurizr").with_arg("local");
+    pb.with_arg("structurizr")
+        .with_arg("local")
+        .with_arg("/antora/c4-model");
 
     pb
 }
