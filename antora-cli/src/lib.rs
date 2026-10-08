@@ -2,6 +2,9 @@ mod application;
 pub use application::{CliArgs, run_cli};
 pub mod tasks;
 
+mod defaulttemplateresolver;
+pub use defaulttemplateresolver::DefaultTemplateResolver;
+
 //pub fn run_from_env_args(template_resolver: Box<dyn TemplateResolver>) {
 //    application::run_cli(std::env::args_os(), template_resolver)
 //}

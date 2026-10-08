@@ -70,6 +70,7 @@ dependencies = [
  "antora-project",
  "clap",
  "init-task",
+ "init-templates",
  "regex",
  "relative-path",
  "webbrowser",
@@ -105,10 +106,7 @@ name = "app"
 version = "0.8.0"
 dependencies = [
  "antora-cli",
- "antora-project",
  "clap",
- "init-task",
- "init-templates",
 ]
 
 [[package]]

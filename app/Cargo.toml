@@ -12,6 +12,3 @@ path = "src/main.rs"
 [dependencies]
 clap = { workspace = true }
 antora-cli = { path = "../antora-cli" }
-antora-project = { path = "../antora-project" }
-init-task = { path = "../init-task" }
-init-templates = { path = "../init-templates" }
