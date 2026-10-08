@@ -1,17 +1,17 @@
 [package]
-name = "antora-cli"
+name = "app"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "antora-cli"
+path = "src/main.rs"
+
 [dependencies]
 clap = { workspace = true }
-regex = { workspace = true }
-webbrowser = "1.0.6"
-xml = "1.2.0"
+antora-cli = { path = "../antora-cli" }
 antora-project = { path = "../antora-project" }
-antora-fs = { path = "../antora-fs" }
-antora-process = { path = "../antora-process" }
-relative-path = { path = "../relative-path" }
 init-task = { path = "../init-task" }
+init-templates = { path = "../init-templates" }

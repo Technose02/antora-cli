@@ -14,7 +14,7 @@ pub use structurizr::{
     run_local as run_structurizr_local,
 };
 
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone)]
 pub enum AntoraLogLevel {
     Fatal,
     Error,

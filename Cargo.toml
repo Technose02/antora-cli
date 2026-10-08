@@ -1,9 +1,10 @@
 [workspace]
-members = ["antora-cli", "antora-fs", "antora-process", "antora-project", "relative-path", "init-task", "init-templates"]
-default-members = [ "antora-cli" ]
+members = ["antora-cli", "antora-fs", "antora-process", "antora-project", "relative-path", "init-task", "init-templates", "app"]
+default-members = [ "app" ]
 resolver = "2"
 
 [workspace.package]
+version = "0.8.0"
 edition = "2024"
 authors = ["Technose02 <technose02@yahoo.de>"]
 license = "MIT"
@@ -11,3 +12,4 @@ license = "MIT"
 [workspace.dependencies]
 regex = "1.12.2"
 serde = { version = "1.0.228", features = ["derive"] }
+clap = { version = "4.5.51", features = ["derive"] }

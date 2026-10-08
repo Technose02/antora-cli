@@ -1,9 +1,8 @@
 use crate::tasks::{AntoraLogLevel, ExportFormat};
-use clap::{Parser, Subcommand};
+use clap::{Args, Subcommand};
 
-#[derive(Parser)]
-#[command(version, about = "antora-cli helps you create, manage(todo!) and build your antora-projects", long_about = None)]
-pub struct CliApp {
+#[derive(Debug, Args)]
+pub struct CliArgs {
     /// the project-directory to be used in the specific task (default is current directory)
     #[arg(short = 'p', long, value_name = "DIR")]
     pub project_dir: Option<String>,
@@ -12,7 +11,7 @@ pub struct CliApp {
     pub command: CliCommands,
 }
 
-#[derive(Subcommand)]
+#[derive(Debug, Subcommand)]
 pub enum CliCommands {
     /// initializes a new project in the project-dir.
     /// This will create a new component and a default playbook using provided values or prompting for them.
@@ -106,7 +105,7 @@ pub enum CliCommands {
     },
 }
 
-#[derive(Subcommand)]
+#[derive(Debug, Subcommand)]
 pub enum StructurizrCommands {
     #[command(about = "runs a local structurizr instance", long_about=None)]
     Local {
