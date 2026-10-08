@@ -63,14 +63,13 @@ dependencies = [
 
 [[package]]
 name = "antora-cli"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "antora-fs",
  "antora-process",
  "antora-project",
  "clap",
  "init-task",
- "init-templates",
  "regex",
  "relative-path",
  "webbrowser",
@@ -79,7 +78,7 @@ dependencies = [
 
 [[package]]
 name = "antora-fs"
-version = "0.1.0"
+version = "0.8.0"
 dependencies = [
  "antora-project",
  "relative-path",
@@ -88,17 +87,28 @@ dependencies = [
 
 [[package]]
 name = "antora-process"
-version = "0.1.0"
+version = "0.8.0"
 
 [[package]]
 name = "antora-project"
-version = "0.1.0"
+version = "0.8.0"
 dependencies = [
  "regex",
  "relative-path",
  "serde",
  "serde_yaml_bw",
  "toml",
+]
+
+[[package]]
+name = "app"
+version = "0.8.0"
+dependencies = [
+ "antora-cli",
+ "antora-project",
+ "clap",
+ "init-task",
+ "init-templates",
 ]
 
 [[package]]
@@ -397,7 +407,7 @@ dependencies = [
 
 [[package]]
 name = "init-task"
-version = "0.1.0"
+version = "0.8.0"
 dependencies = [
  "antora-fs",
  "antora-process",
@@ -407,7 +417,7 @@ dependencies = [
 
 [[package]]
 name = "init-templates"
-version = "0.1.0"
+version = "0.8.0"
 dependencies = [
  "antora-fs",
  "antora-project",
@@ -650,7 +660,7 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "relative-path"
-version = "0.1.0"
+version = "0.8.0"
 dependencies = [
  "serde",
 ]

@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, ffi::OsString};
+use std::borrow::Borrow;
 
 use crate::{
     application::cli::StructurizrCommands,
@@ -7,21 +7,15 @@ use crate::{
         run_structurizr_local,
     },
 };
-use clap::Parser;
 use init_task::{InitArgs, InitTask, TemplateResolver};
 mod cli;
 
-pub use cli::{CliApp, CliCommands};
+pub use cli::{CliArgs, CliCommands};
 
-pub fn run_cli<I, T>(args_iter: I, template_resolver: Box<dyn TemplateResolver>)
-where
-    I: IntoIterator<Item = T>,
-    T: Into<OsString> + Clone,
-{
-    let cli = CliApp::parse_from(args_iter);
-    let project_dir = Into::<&Option<String>>::into(cli.project_dir.borrow()).as_ref();
+pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) {
+    let project_dir = Into::<&Option<String>>::into(cli_args.project_dir.borrow()).as_ref();
 
-    match &cli.command {
+    match &cli_args.command {
         CliCommands::Init {
             non_interactive,
             content_source_root,
