@@ -1,8 +1,5 @@
-use antora_cli::{CliArgs, run_cli};
+use antora_cli::{CliArgs, DefaultTemplateResolver, run_cli};
 use clap::Parser;
-
-mod defaulttemplateresolver;
-use defaulttemplateresolver::DefaultTemplateResolver;
 
 #[derive(Debug, Parser)]
 #[command(name = "antora-cli", bin_name = "antora-cli", version, about)]
