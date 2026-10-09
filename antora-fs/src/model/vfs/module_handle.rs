@@ -89,4 +89,11 @@ impl<'a> ModuleHandle<'a> {
     pub fn write_partial(&self, resource_file: impl ResourceFile) -> ResourceId {
         self.write_familily_resource(Families::Partials, resource_file)
     }
+
+    pub fn create_resource_id(&self, family: Families, relative_file: &RelativeFile) -> ResourceId {
+        ResourceId::new(relative_file.clone())
+            .with_component_name(self.component_name.clone())
+            .with_module(self.module_name.clone())
+            .with_family(family)
+    }
 }
