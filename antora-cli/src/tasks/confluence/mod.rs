@@ -16,7 +16,8 @@ use relative_path::Filename;
 use std::{
     fs,
     path::{Path, PathBuf},
-    process::exit,
+    process::{Command, exit},
+    sync::{Arc, Mutex},
 };
 
 use crate::tasks::confluence::pom_xml_template::CONFLUENCE_PAT_ENV_VARIABLE;
@@ -50,7 +51,10 @@ impl Drop for TempMavenXml {
     }
 }
 
-pub fn run(confluence_args: ConfluenceArgs) {
+pub fn run(
+    confluence_args: ConfluenceArgs,
+    container_cleanup_command_target: Arc<Mutex<Option<Command>>>,
+) {
     let mut dir = if let Some(dir) = confluence_args.project_dir {
         PathBuf::from(dir)
     } else {
@@ -179,7 +183,8 @@ pub fn run(confluence_args: ConfluenceArgs) {
         );
         docker_cmd.with_stdout(no_op_lineprocessor());
         docker_cmd.with_stderr(no_op_lineprocessor());
-        let docker_res = docker_cmd.run::<DockerTool>();
+        let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
+        let docker_res = docker_cmd.run::<DockerTool>(container_cleanup_command_target_cloned);
 
         if let Err(ProcessError::CommandNotAvailable(_)) = docker_res {
             println!("docker is not available, trying podman");
@@ -195,13 +200,15 @@ pub fn run(confluence_args: ConfluenceArgs) {
             );
             podman_cmd.with_stdout(no_op_lineprocessor());
             podman_cmd.with_stderr(no_op_lineprocessor());
-            let exec_podman_cmd = || podman_cmd.run::<PodmanTool>();
 
-            let podman_res = exec_podman_cmd();
+            let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
+            let podman_res = podman_cmd.run::<PodmanTool>(container_cleanup_command_target_cloned);
             if let Err(ProcessError::ProcessExitedWithUnexpectedCode(125)) = podman_res {
                 println!("starting podman default machine and retrying..");
-                _ = podman_start_default_machine();
-                exec_podman_cmd()
+                let container_cleanup_command_target_cloned =
+                    container_cleanup_command_target.clone();
+                _ = podman_start_default_machine(container_cleanup_command_target_cloned);
+                podman_cmd.run::<PodmanTool>(container_cleanup_command_target)
             } else {
                 podman_res
             }

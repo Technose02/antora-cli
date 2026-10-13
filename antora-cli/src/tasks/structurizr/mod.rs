@@ -9,12 +9,17 @@ use antora_process::{
     no_op_lineprocessor,
     podman::{
         PodmanTool, run_structurizr_export as run_structurizr_export_podman,
+        run_structurizr_local as run_structurizr_local_podman,
         start_default_machine as podman_start_default_machine,
     },
 };
 
 use antora_project::antora_configuration::{AntoraConfiguration, ImageConfig, PlaybookConfig};
-use std::{path::PathBuf, process::exit};
+use std::{
+    path::PathBuf,
+    process::{Command, exit},
+    sync::{Arc, Mutex},
+};
 
 const DEFAULT_STRUCTURIZR_HOST_PORT: u16 = 8080;
 pub const STRUCTURIZR_CONTAINER_PORT: u16 = 8080;
@@ -23,6 +28,7 @@ pub fn run_export_diagrams(
     project_dir: Option<&String>,
     default_image_config: ImageConfig,
     export_format: Option<&ExportFormat>,
+    container_cleanup_command_target: Arc<Mutex<Option<Command>>>,
 ) {
     let dir = if let Some(dir) = project_dir {
         PathBuf::from(dir)
@@ -69,7 +75,8 @@ pub fn run_export_diagrams(
         );
         docker_cmd.with_stdout(no_op_lineprocessor());
         docker_cmd.with_stderr(no_op_lineprocessor());
-        let docker_res = docker_cmd.run::<DockerTool>();
+        let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
+        let docker_res = docker_cmd.run::<DockerTool>(container_cleanup_command_target_cloned);
 
         if let Err(ProcessError::CommandNotAvailable(_)) = docker_res {
             println!("docker is not available, trying podman");
@@ -81,13 +88,15 @@ pub fn run_export_diagrams(
             );
             podman_cmd.with_stdout(no_op_lineprocessor());
             podman_cmd.with_stderr(no_op_lineprocessor());
-            let exec_podman_cmd = || podman_cmd.run::<PodmanTool>();
+            let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
 
-            let podman_res = exec_podman_cmd();
+            let podman_res = podman_cmd.run::<PodmanTool>(container_cleanup_command_target_cloned);
             if let Err(ProcessError::ProcessExitedWithUnexpectedCode(125)) = podman_res {
                 println!("starting podman default machine and retrying..");
-                _ = podman_start_default_machine();
-                exec_podman_cmd()
+                let container_cleanup_command_target_cloned =
+                    container_cleanup_command_target.clone();
+                _ = podman_start_default_machine(container_cleanup_command_target_cloned);
+                podman_cmd.run::<PodmanTool>(container_cleanup_command_target)
             } else {
                 podman_res
             }
@@ -108,6 +117,7 @@ pub fn run_local(
     project_dir: Option<&String>,
     default_image_config: ImageConfig,
     selected_host_port: Option<u16>,
+    container_cleanup_command_target: Arc<Mutex<Option<Command>>>,
 ) {
     let dir = if let Some(dir) = project_dir {
         PathBuf::from(dir)
@@ -151,22 +161,25 @@ pub fn run_local(
             run_structurizr_local_docker(&dir, &antora_config.antora_image(), host_port);
         docker_cmd.with_stdout(no_op_lineprocessor());
         docker_cmd.with_stderr(no_op_lineprocessor());
-        let docker_res = docker_cmd.run::<DockerTool>();
+        let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
+        let docker_res = docker_cmd.run::<DockerTool>(container_cleanup_command_target_cloned);
 
         if let Err(ProcessError::CommandNotAvailable(_)) = docker_res {
             println!("docker is not available, trying podman");
 
             let mut podman_cmd =
-                run_structurizr_local_docker(&dir, &antora_config.antora_image(), host_port);
+                run_structurizr_local_podman(&dir, &antora_config.antora_image(), host_port);
             podman_cmd.with_stdout(no_op_lineprocessor());
             podman_cmd.with_stderr(no_op_lineprocessor());
-            let exec_podman_cmd = || podman_cmd.run::<PodmanTool>();
+            let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
 
-            let podman_res = exec_podman_cmd();
+            let podman_res = podman_cmd.run::<PodmanTool>(container_cleanup_command_target_cloned);
             if let Err(ProcessError::ProcessExitedWithUnexpectedCode(125)) = podman_res {
                 println!("starting podman default machine and retrying..");
-                _ = podman_start_default_machine();
-                exec_podman_cmd()
+                let container_cleanup_command_target_cloned =
+                    container_cleanup_command_target.clone();
+                _ = podman_start_default_machine(container_cleanup_command_target_cloned);
+                podman_cmd.run::<PodmanTool>(container_cleanup_command_target)
             } else {
                 podman_res
             }
@@ -179,6 +192,4 @@ pub fn run_local(
         eprintln!("encountered error: {e}");
         exit(1);
     }
-
-    println!("diagrams successfully exported");
 }

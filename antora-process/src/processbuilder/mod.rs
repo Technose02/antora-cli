@@ -1,9 +1,11 @@
-use crate::{Error, Result};
+use crate::{CID_FILENAME, Error, Result};
 use std::{
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     process::{Command, Stdio},
+    sync::{Arc, Mutex},
     thread::spawn,
+    time::{Duration, Instant},
 };
 
 mod lineprocessor;
@@ -59,7 +61,10 @@ impl ProcessBuilder {
         self
     }
 
-    pub fn run<T>(&self) -> Result<(Option<String>, Option<String>)>
+    pub fn run<T>(
+        &self,
+        container_cleanup_command_target: Arc<Mutex<Option<Command>>>,
+    ) -> Result<(Option<String>, Option<String>)>
     where
         T: ExtTool,
     {
@@ -90,6 +95,55 @@ impl ProcessBuilder {
         let mut handle = cmd
             .spawn()
             .map_err(|e| Error::spawn_command_failed(&cmd, e))?;
+
+        let cmd_dir = cmd.get_current_dir().map(|p| p.to_owned());
+        std::thread::spawn(move || {
+            let cid_path = {
+                let mut path = if let Some(path) = cmd_dir {
+                    path
+                } else {
+                    if let Ok(path) = std::env::current_dir() {
+                        path
+                    } else {
+                        "./".into()
+                    }
+                };
+                path.push(CID_FILENAME);
+                path
+            };
+
+            let started = std::time::Instant::now();
+            while Instant::now().duration_since(started) <= Duration::from_millis(5000) {
+                if cid_path.is_file()
+                    && let Ok(cid) = std::fs::read_to_string(&cid_path)
+                    && !cid.is_empty()
+                {
+                    let mut cleanup_command = Command::new(cmd.get_program());
+                    cleanup_command.arg("container").arg("kill").arg(&cid);
+
+                    let mut lock = container_cleanup_command_target.lock();
+                    let container_cleanup_command_target = lock
+                        .as_deref_mut()
+                        .expect("failed to lock on container_cleanup_map");
+                    *container_cleanup_command_target = Some(cleanup_command);
+                    println!("registered container_cleanup_command_target with cid '{cid}'");
+                    std::thread::spawn(move || {
+                        let started = std::time::Instant::now();
+                        while Instant::now().duration_since(started) <= Duration::from_millis(5000)
+                        {
+                            if std::fs::remove_file(&cid_path).is_ok() {
+                                return;
+                            }
+                            std::thread::sleep(Duration::from_millis(10));
+                        }
+                        eprintln!("failed to remove cidfile '{cid_path:#?}'");
+                    });
+                    return;
+                }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            println!("no cid detected");
+        });
 
         let stdout_handle = if let Some(stdout_line_processor) = self.stdout.clone() {
             let stdout_lines_iter = BufReader::new(

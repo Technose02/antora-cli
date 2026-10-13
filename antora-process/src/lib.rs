@@ -6,3 +6,5 @@ mod error;
 pub mod git;
 pub mod podman;
 pub use error::{Error, Result};
+
+const CID_FILENAME: &str = ".cid";
