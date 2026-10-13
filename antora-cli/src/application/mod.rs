@@ -1,9 +1,7 @@
 use std::{
     borrow::Borrow,
-    collections::HashSet,
-    process::Command,
+    process::{Command, Stdio},
     sync::{Arc, Mutex},
-    time::Duration,
 };
 
 use crate::{
@@ -19,18 +17,19 @@ mod cli;
 pub use cli::{CliArgs, CliCommands};
 
 pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) {
-    let container_cleanup_command = Arc::new(Mutex::new(None::<Command>));
+    let container_cleanup_command_target = Arc::new(Mutex::new(None::<Command>));
 
-    let container_cleanup_command_cloned = container_cleanup_command.clone();
+    let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
     ctrlc::set_handler(move || {
-        let mut lock = container_cleanup_command_cloned.lock();
-        let container_cleanup_command = lock
+        let mut lock = container_cleanup_command_target_cloned.lock();
+        let container_cleanup_command_target = lock
             .as_deref_mut()
             .expect("failed to lock on container_cleanup_map")
-            .as_mut()
-            .take();
-        if let Some(container_cleanup_command) = container_cleanup_command {
+            .as_mut();
+        if let Some(container_cleanup_command) = container_cleanup_command_target {
             let mut child = container_cleanup_command
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
                 .spawn()
                 .expect("error running container_cleanup_command");
             child
@@ -83,7 +82,7 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
                 log_level: log_level.clone().unwrap_or_default(),
                 open: *open,
             },
-            container_cleanup_command,
+            container_cleanup_command_target,
         ),
         CliCommands::Confluence {
             playbook,
@@ -99,20 +98,20 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
                 default_image_config: template_resolver.default_image_config(),
                 log_level: log_level.clone().unwrap_or_default(),
             },
-            container_cleanup_command,
+            container_cleanup_command_target,
         ),
         CliCommands::Structurizr { command } => match command {
             StructurizrCommands::Local { host_port } => run_structurizr_local(
                 project_dir,
                 template_resolver.default_image_config(),
                 *host_port,
-                container_cleanup_command,
+                container_cleanup_command_target,
             ),
             StructurizrCommands::ExportDiagrams { format } => run_export_structurizr_diagrams(
                 project_dir,
                 template_resolver.default_image_config(),
                 format.as_ref(),
-                container_cleanup_command,
+                container_cleanup_command_target,
             ),
         },
     }

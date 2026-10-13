@@ -1,4 +1,4 @@
-use super::{ExtTool, ProcessBuilder};
+use super::{CID_FILENAME, ExtTool, ProcessBuilder};
 use std::{path::Path, process::Stdio, sync::OnceLock};
 
 static DOCKER_VERSION: OnceLock<Option<String>> = OnceLock::new();
@@ -66,7 +66,9 @@ where
             format!("{}=\"{}\"", env_var.0.as_ref(), env_var.1.as_ref()).as_str(),
         ]);
     }
-    pb.with_args(["--rm", "-tv", ".:/antora:Z", image_tag]);
+    pb.with_arg("--rm");
+    pb.with_arg("--cidfile").with_arg(CID_FILENAME);
+    pb.with_args(["-tv", ".:/antora:Z", image_tag]);
 
     if fetch {
         pb.with_arg("--fetch");
@@ -88,7 +90,9 @@ where
 pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) -> ProcessBuilder {
     let mut pb = ProcessBuilder::new();
     pb.in_dir(dir).with_arg("run");
-    pb.with_args(["--rm", "-tv", ".:/antora:Z", image_tag, "structurizr"]);
+    pb.with_arg("--rm");
+    pb.with_arg("--cidfile").with_arg(CID_FILENAME);
+    pb.with_args(["-tv", ".:/antora:Z", image_tag, "structurizr"]);
 
     pb.with_arg("export");
     pb.with_arg("-w").with_arg("/antora/c4-model/workspace.dsl");
@@ -104,6 +108,8 @@ pub fn run_structurizr_local(dir: &Path, image_tag: &str, host_port: u16) -> Pro
     pb.in_dir(dir)
         .with_arg("run")
         .with_arg("--rm")
+        .with_arg("--cidfile")
+        .with_arg(CID_FILENAME)
         .with_arg("-t");
     pb.with_arg("-p").with_arg(format!("{}:8080", host_port));
     pb.with_arg("-v").with_arg(".:/antora:Z");
@@ -136,13 +142,9 @@ where
             format!("{}={}", env_var.0.as_ref(), env_var.1.as_ref()).as_str(),
         ]);
     }
-    pb.with_args([
-        "--rm",
-        "-tv",
-        ".:/antora:Z",
-        image_tag,
-        "confluence-publish",
-    ]);
+    pb.with_arg("--rm");
+    pb.with_arg("--cidfile").with_arg(CID_FILENAME);
+    pb.with_args(["-tv", ".:/antora:Z", image_tag, "confluence-publish"]);
 
     if fetch {
         pb.with_arg("--fetch");

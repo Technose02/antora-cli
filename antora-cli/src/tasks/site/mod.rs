@@ -18,7 +18,6 @@ use regex::Regex;
 use relative_path::Filename;
 
 use std::{
-    collections::HashSet,
     fs::read_to_string,
     path::{Path, PathBuf},
     process::{Command, exit},
@@ -94,7 +93,7 @@ pub fn validate_playbook_filename(
     }
 }
 
-pub fn run(site_args: SiteArgs, container_cleanup_command: Arc<Mutex<Option<Command>>>) {
+pub fn run(site_args: SiteArgs, container_cleanup_command_target: Arc<Mutex<Option<Command>>>) {
     let mut dir = if let Some(dir) = site_args.project_dir {
         PathBuf::from(dir)
     } else {
@@ -195,8 +194,8 @@ pub fn run(site_args: SiteArgs, container_cleanup_command: Arc<Mutex<Option<Comm
         );
         docker_cmd.with_stdout(build_site_url_fixer.clone());
         docker_cmd.with_stderr(no_op_lineprocessor());
-        let pid_map_cloned = pid_map.clone();
-        let docker_res = docker_cmd.run::<DockerTool>(pid_map_cloned);
+        let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
+        let docker_res = docker_cmd.run::<DockerTool>(container_cleanup_command_target_cloned);
 
         if let Err(ProcessError::CommandNotAvailable(_)) = docker_res {
             println!("docker is not available, trying podman");
@@ -213,13 +212,14 @@ pub fn run(site_args: SiteArgs, container_cleanup_command: Arc<Mutex<Option<Comm
             podman_cmd.with_stdout(build_site_url_fixer);
             podman_cmd.with_stderr(no_op_lineprocessor());
 
-            let pid_map_cloned = pid_map.clone();
-            let podman_res = podman_cmd.run::<PodmanTool>(pid_map_cloned);
+            let container_cleanup_command_target_cloned = container_cleanup_command_target.clone();
+            let podman_res = podman_cmd.run::<PodmanTool>(container_cleanup_command_target_cloned);
             if let Err(ProcessError::ProcessExitedWithUnexpectedCode(125)) = podman_res {
                 println!("starting podman default machine and retrying..");
-                let pid_map_cloned = pid_map.clone();
-                _ = podman_start_default_machine(pid_map_cloned);
-                podman_cmd.run::<PodmanTool>(pid_map)
+                let container_cleanup_command_target_cloned =
+                    container_cleanup_command_target.clone();
+                _ = podman_start_default_machine(container_cleanup_command_target_cloned);
+                podman_cmd.run::<PodmanTool>(container_cleanup_command_target)
             } else {
                 podman_res
             }

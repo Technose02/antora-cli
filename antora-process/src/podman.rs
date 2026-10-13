@@ -1,11 +1,10 @@
 use std::{
-    collections::HashSet,
-    path::{Path, PathBuf},
-    process::Stdio,
+    path::Path,
+    process::{Command, Stdio},
     sync::{Arc, Mutex, OnceLock},
 };
 
-use super::{ExtTool, ProcessBuilder, Result};
+use super::{CID_FILENAME, ExtTool, ProcessBuilder, Result};
 
 static PODMAN_VERSION: OnceLock<Option<String>> = OnceLock::new();
 
@@ -51,10 +50,12 @@ impl PodmanTool {
     }
 }
 
-pub fn start_default_machine(pid_map: Arc<Mutex<HashSet<u32>>>) -> Result<()> {
+pub fn start_default_machine(
+    container_cleanup_command_target: Arc<Mutex<Option<Command>>>,
+) -> Result<()> {
     ProcessBuilder::new()
         .with_args(["machine", "start"])
-        .run::<PodmanTool>(pid_map)?;
+        .run::<PodmanTool>(container_cleanup_command_target)?;
     Ok(())
 }
 
@@ -83,7 +84,7 @@ where
         "--tls-verify=false",
         "--rm",
         "--cidfile",
-        "./.cid",
+        CID_FILENAME,
         "-tv",
         ".:/antora:Z",
         image_tag,
@@ -110,7 +111,7 @@ pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) 
     pb.with_args([
         "--rm",
         "--cidfile",
-        "./.cid",
+        CID_FILENAME,
         "-tv",
         ".:/antora:Z",
         image_tag,
@@ -128,18 +129,12 @@ pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) 
 
 pub fn run_structurizr_local(dir: &Path, image_tag: &str, host_port: u16) -> ProcessBuilder {
     let mut pb = ProcessBuilder::new();
-    let cid_path = {
-        let mut p = PathBuf::from(dir);
-        p.push(".cid");
-        p
-    };
-    std::fs::write(&cid_path, "").unwrap();
-    println!("created cid-file '{cid_path:#?}'");
+
     pb.in_dir(dir)
         .with_arg("run")
         .with_arg("--rm")
         .with_arg("--cidfile")
-        .with_arg(".cid")
+        .with_arg(CID_FILENAME)
         .with_arg("-t");
     pb.with_arg("-p").with_arg(format!("{}:8080", host_port));
     pb.with_arg("-v").with_arg(".:/antora:Z");
@@ -176,7 +171,7 @@ where
         "--tls-verify=false",
         "--rm",
         "--cidfile",
-        "./.cid",
+        CID_FILENAME,
         "-tv",
         ".:/antora:Z",
         image_tag,
