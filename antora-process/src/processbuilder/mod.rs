@@ -1,8 +1,10 @@
 use crate::{Error, Result};
 use std::{
+    collections::HashSet,
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     process::{Command, Stdio},
+    sync::{Arc, Mutex},
     thread::spawn,
 };
 
@@ -59,7 +61,10 @@ impl ProcessBuilder {
         self
     }
 
-    pub fn run<T>(&self) -> Result<(Option<String>, Option<String>)>
+    pub fn run<T>(
+        &self,
+        pid_map: Arc<Mutex<HashSet<u32>>>,
+    ) -> Result<(Option<String>, Option<String>)>
     where
         T: ExtTool,
     {
@@ -90,6 +95,13 @@ impl ProcessBuilder {
         let mut handle = cmd
             .spawn()
             .map_err(|e| Error::spawn_command_failed(&cmd, e))?;
+
+        {
+            let mut pid_map = pid_map.lock().expect("failed to lock on pid_map");
+            if !pid_map.insert(handle.id()) {
+                panic!("failed to add pid to pid_map");
+            }
+        }
 
         let stdout_handle = if let Some(stdout_line_processor) = self.stdout.clone() {
             let stdout_lines_iter = BufReader::new(

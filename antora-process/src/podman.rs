@@ -1,4 +1,9 @@
-use std::{path::Path, process::Stdio, sync::OnceLock};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+    process::Stdio,
+    sync::{Arc, Mutex, OnceLock},
+};
 
 use super::{ExtTool, ProcessBuilder, Result};
 
@@ -46,10 +51,10 @@ impl PodmanTool {
     }
 }
 
-pub fn start_default_machine() -> Result<()> {
+pub fn start_default_machine(pid_map: Arc<Mutex<HashSet<u32>>>) -> Result<()> {
     ProcessBuilder::new()
         .with_args(["machine", "start"])
-        .run::<PodmanTool>()?;
+        .run::<PodmanTool>(pid_map)?;
     Ok(())
 }
 
@@ -77,6 +82,8 @@ where
     pb.with_args([
         "--tls-verify=false",
         "--rm",
+        "--cidfile",
+        "./.cid",
         "-tv",
         ".:/antora:Z",
         image_tag,
@@ -100,7 +107,15 @@ where
 pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) -> ProcessBuilder {
     let mut pb = ProcessBuilder::new();
     pb.in_dir(dir).with_arg("run");
-    pb.with_args(["--rm", "-tv", ".:/antora:Z", image_tag, "structurizr"]);
+    pb.with_args([
+        "--rm",
+        "--cidfile",
+        "./.cid",
+        "-tv",
+        ".:/antora:Z",
+        image_tag,
+        "structurizr",
+    ]);
 
     pb.with_arg("export");
     pb.with_arg("-w").with_arg("/antora/c4-model/workspace.dsl");
@@ -113,9 +128,18 @@ pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) 
 
 pub fn run_structurizr_local(dir: &Path, image_tag: &str, host_port: u16) -> ProcessBuilder {
     let mut pb = ProcessBuilder::new();
+    let cid_path = {
+        let mut p = PathBuf::from(dir);
+        p.push(".cid");
+        p
+    };
+    std::fs::write(&cid_path, "").unwrap();
+    println!("created cid-file '{cid_path:#?}'");
     pb.in_dir(dir)
         .with_arg("run")
         .with_arg("--rm")
+        .with_arg("--cidfile")
+        .with_arg(".cid")
         .with_arg("-t");
     pb.with_arg("-p").with_arg(format!("{}:8080", host_port));
     pb.with_arg("-v").with_arg(".:/antora:Z");
@@ -151,6 +175,8 @@ where
     pb.with_args([
         "--tls-verify=false",
         "--rm",
+        "--cidfile",
+        "./.cid",
         "-tv",
         ".:/antora:Z",
         image_tag,

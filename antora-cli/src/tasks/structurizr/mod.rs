@@ -9,12 +9,18 @@ use antora_process::{
     no_op_lineprocessor,
     podman::{
         PodmanTool, run_structurizr_export as run_structurizr_export_podman,
+        run_structurizr_local as run_structurizr_local_podman,
         start_default_machine as podman_start_default_machine,
     },
 };
 
 use antora_project::antora_configuration::{AntoraConfiguration, ImageConfig, PlaybookConfig};
-use std::{path::PathBuf, process::exit};
+use std::{
+    collections::HashSet,
+    path::PathBuf,
+    process::{Command, exit},
+    sync::{Arc, Mutex},
+};
 
 const DEFAULT_STRUCTURIZR_HOST_PORT: u16 = 8080;
 pub const STRUCTURIZR_CONTAINER_PORT: u16 = 8080;
@@ -23,6 +29,7 @@ pub fn run_export_diagrams(
     project_dir: Option<&String>,
     default_image_config: ImageConfig,
     export_format: Option<&ExportFormat>,
+    container_cleanup_command: Arc<Mutex<Option<Command>>>,
 ) {
     let dir = if let Some(dir) = project_dir {
         PathBuf::from(dir)
@@ -69,7 +76,8 @@ pub fn run_export_diagrams(
         );
         docker_cmd.with_stdout(no_op_lineprocessor());
         docker_cmd.with_stderr(no_op_lineprocessor());
-        let docker_res = docker_cmd.run::<DockerTool>();
+        let pid_map_cloned = pid_map.clone();
+        let docker_res = docker_cmd.run::<DockerTool>(pid_map_cloned);
 
         if let Err(ProcessError::CommandNotAvailable(_)) = docker_res {
             println!("docker is not available, trying podman");
@@ -81,13 +89,14 @@ pub fn run_export_diagrams(
             );
             podman_cmd.with_stdout(no_op_lineprocessor());
             podman_cmd.with_stderr(no_op_lineprocessor());
-            let exec_podman_cmd = || podman_cmd.run::<PodmanTool>();
+            let pid_map_cloned = pid_map.clone();
 
-            let podman_res = exec_podman_cmd();
+            let podman_res = podman_cmd.run::<PodmanTool>(pid_map_cloned);
             if let Err(ProcessError::ProcessExitedWithUnexpectedCode(125)) = podman_res {
                 println!("starting podman default machine and retrying..");
-                _ = podman_start_default_machine();
-                exec_podman_cmd()
+                let pid_map_cloned = pid_map.clone();
+                _ = podman_start_default_machine(pid_map_cloned);
+                podman_cmd.run::<PodmanTool>(pid_map)
             } else {
                 podman_res
             }
@@ -108,6 +117,7 @@ pub fn run_local(
     project_dir: Option<&String>,
     default_image_config: ImageConfig,
     selected_host_port: Option<u16>,
+    container_cleanup_command: Arc<Mutex<Option<Command>>>,
 ) {
     let dir = if let Some(dir) = project_dir {
         PathBuf::from(dir)
@@ -151,22 +161,24 @@ pub fn run_local(
             run_structurizr_local_docker(&dir, &antora_config.antora_image(), host_port);
         docker_cmd.with_stdout(no_op_lineprocessor());
         docker_cmd.with_stderr(no_op_lineprocessor());
-        let docker_res = docker_cmd.run::<DockerTool>();
+        let pid_map_cloned = pid_map.clone();
+        let docker_res = docker_cmd.run::<DockerTool>(pid_map_cloned);
 
         if let Err(ProcessError::CommandNotAvailable(_)) = docker_res {
             println!("docker is not available, trying podman");
 
             let mut podman_cmd =
-                run_structurizr_local_docker(&dir, &antora_config.antora_image(), host_port);
+                run_structurizr_local_podman(&dir, &antora_config.antora_image(), host_port);
             podman_cmd.with_stdout(no_op_lineprocessor());
             podman_cmd.with_stderr(no_op_lineprocessor());
-            let exec_podman_cmd = || podman_cmd.run::<PodmanTool>();
+            let pid_map_cloned = pid_map.clone();
 
-            let podman_res = exec_podman_cmd();
+            let podman_res = podman_cmd.run::<PodmanTool>(pid_map_cloned);
             if let Err(ProcessError::ProcessExitedWithUnexpectedCode(125)) = podman_res {
                 println!("starting podman default machine and retrying..");
-                _ = podman_start_default_machine();
-                exec_podman_cmd()
+                let pid_map_cloned = pid_map.clone();
+                _ = podman_start_default_machine(pid_map_cloned);
+                podman_cmd.run::<PodmanTool>(pid_map)
             } else {
                 podman_res
             }
@@ -179,6 +191,4 @@ pub fn run_local(
         eprintln!("encountered error: {e}");
         exit(1);
     }
-
-    println!("diagrams successfully exported");
 }
