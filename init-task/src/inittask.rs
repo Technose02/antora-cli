@@ -49,7 +49,7 @@ impl InitTask {
             }
             Err(AntoraFsError::FoundSecretsConfigurationIsInvalid) => {
                 eprintln!(
-                    "the provided project-dir contains an invalid antora-secrets-configuration and cannot be used"
+                    "the provided project-dir contains an invalid antora-cli-secrets-configuration and cannot be used"
                 );
                 exit(1);
             }

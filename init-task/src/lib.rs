@@ -34,8 +34,8 @@ pub trait Template {
     /// - .gitignore
     /// - antora.yaml
     /// - playbook-file
-    /// - antora.toml
-    /// - antora-secrets.toml
+    /// - antora-cli.toml
+    /// - antora-cli-secrets.toml
     fn process(&mut self, vfs: &Vfs, pdf_target: bool);
 
     /// returns the content to write into the .gitignore

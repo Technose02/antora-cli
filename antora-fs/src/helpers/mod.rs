@@ -6,7 +6,7 @@ use std::{
 };
 use walkdir::{DirEntry, WalkDir};
 
-/// Reads searches and reads the file "antora-secrets.toml" from the provided path.
+/// Reads searches and reads the file "antora-cli-secrets.toml" from the provided path.
 /// If found, it uses functionality from the antora-project-crate to parse the file into a valid Secrets-Struct.
 /// If parsing fails, the file is assumed to be invalid.
 pub fn read_antora_secrets_from_dir(dir: impl AsRef<Path>) -> Result<Option<AntoraSecrets>> {

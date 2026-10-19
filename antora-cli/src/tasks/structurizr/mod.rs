@@ -24,7 +24,7 @@ use std::{
 const DEFAULT_STRUCTURIZR_HOST_PORT: u16 = 8080;
 pub const STRUCTURIZR_CONTAINER_PORT: u16 = 8080;
 
-pub fn run_export_diagrams(
+pub fn run_export_views(
     project_dir: Option<&String>,
     default_image_config: ImageConfig,
     export_format: Option<&ExportFormat>,
@@ -110,7 +110,7 @@ pub fn run_export_diagrams(
         exit(1);
     }
 
-    println!("diagrams successfully exported");
+    println!("structurizr-views successfully exported");
 }
 
 pub fn run_local(

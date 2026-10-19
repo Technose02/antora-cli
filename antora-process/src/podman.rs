@@ -122,7 +122,7 @@ pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) 
     pb.with_arg("-w").with_arg("/antora/c4-model/workspace.dsl");
     pb.with_arg("-f").with_arg(export_format);
     pb.with_arg("-o")
-        .with_arg("/antora/c4-model/exported_diagrams");
+        .with_arg("/antora/c4-model/exported_views");
 
     pb
 }

@@ -112,8 +112,8 @@ pub enum StructurizrCommands {
         #[arg(short = 'p', long, value_name = "HOST_PORT")]
         host_port: Option<u16>,
     },
-    #[command(about = "exports diagrams from a given workspace using playwright", long_about = None)]
-    ExportDiagrams {
+    #[command(about = "exports views from a given workspace using playwright", long_about = None)]
+    ExportViews {
         #[arg(short = 'f', long, value_name = "FORMAT")]
         format: Option<ExportFormat>,
     },

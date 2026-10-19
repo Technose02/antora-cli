@@ -3,8 +3,8 @@ mod error;
 mod helpers;
 mod model;
 
-pub const ANTORA_CONFIGURATION: &str = "antora.toml";
-pub const ANTORA_SECRETS_CONFIGURATION: &str = "antora-secrets.toml";
+pub const ANTORA_CONFIGURATION: &str = "antora-cli.toml";
+pub const ANTORA_SECRETS_CONFIGURATION: &str = "antora-cli-secrets.toml";
 pub const DEFAULT_CONTENT_SOURCE_ROOT: &str = "docs";
 const COMPONENT_VERSION_DESCRIPTOR: &str = "antora.yml";
 const GITIGNORE: &str = ".gitignore";

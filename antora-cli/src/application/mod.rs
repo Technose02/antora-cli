@@ -7,7 +7,7 @@ use std::{
 use crate::{
     application::cli::StructurizrCommands,
     tasks::{
-        ConfluenceArgs, SiteArgs, run_confluence, run_export_structurizr_diagrams, run_site,
+        ConfluenceArgs, SiteArgs, run_confluence, run_export_structurizr_views, run_site,
         run_structurizr_local,
     },
 };
@@ -107,7 +107,7 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
                 *host_port,
                 container_cleanup_command_target,
             ),
-            StructurizrCommands::ExportDiagrams { format } => run_export_structurizr_diagrams(
+            StructurizrCommands::ExportViews { format } => run_export_structurizr_views(
                 project_dir,
                 template_resolver.default_image_config(),
                 format.as_ref(),

@@ -64,7 +64,7 @@ aktuelles Verzeichnis).
 Ablauf:
 
 . Validierung des Projektverzeichnisses (abbrechen bei bestehender
-  `antora.toml` oder Default-Playbook).
+  `antora-cli.toml` oder Default-Playbook).
 . Prüfung der Git-Konstellation: `NoRepo`, `RepoAndRoot` (Branch `main`/`master`)
   oder `RepoButNotRoot` (letzteres führt zum Abbruch).
 . Aufbau aller zu erzeugenden Dateien in einem *virtuellen Dateisystem* (Dry-Run).
@@ -77,12 +77,12 @@ Wichtige Flags: `-n` (nicht-interaktiv), `-s` (Scaffolding-Inhalte),
 
 === `site`
 
-Baut die Site aus dem in `antora.toml` referenzierten Playbook mittels des
+Baut die Site aus dem in `antora-cli.toml` referenzierten Playbook mittels des
 Antora-Container-Images.
 
 Ablauf:
 
-. Lesen von `antora.toml` (Fallback auf Defaults) und `antora-secrets.toml`.
+. Lesen von `antora-cli.toml` (Fallback auf Defaults) und `antora-cli-secrets.toml`.
 . Validieren des Playbooks (Default-Dateiname `antora-playbook.yml`).
 . Ausführung via Docker; falls nicht verfügbar, Fallback auf Podman
   (bei Exit-Code 125 automatischer `podman machine start` + Retry).
@@ -95,11 +95,11 @@ Veröffentlicht die Site als Confluence-Seiten via Antora-Confluence-Image.
 
 Ablauf:
 
-. Wie `site`, zusätzlich: Lesen der `confluence`-Sektion aus `antora.toml`
+. Wie `site`, zusätzlich: Lesen der `confluence`-Sektion aus `antora-cli.toml`
   (Default-Anlage mit Hinweis bei Fehlen).
 . Imperative Generierung eines temporären `confluence-publish.xml` (Maven-POM)
   aus `ConfluenceConfig` + Asciidoc-Attributen.
-. PAT aus `antora-secrets.toml` als Umgebungsvariable.
+. PAT aus `antora-cli-secrets.toml` als Umgebungsvariable.
 . Aufräumen der Temp-Datei via `Drop`-Guard.
 
 == Kernkonzepte
@@ -123,9 +123,9 @@ Seiteneffekte und partielle Zustände.
 
 === Konfiguration vs. Secrets
 
-* `antora.toml` -- Projekt-Konfiguration (Playbook-Dateiname, Antora-Image,
+* `antora-cli.toml` -- Projekt-Konfiguration (Playbook-Dateiname, Antora-Image,
   Confluence-Sektion). Repository-Level, versioniert.
-* `antora-secrets.toml` -- Credentials (`git-credentials`, `confluence-pat`).
+* `antora-cli-secrets.toml` -- Credentials (`git-credentials`, `confluence-pat`).
   Repository-Level, wird in `.gitignore` eingetragen.
 
 === Drei-Schichten-Domäne
@@ -133,7 +133,7 @@ Seiteneffekte und partielle Zustände.
 * *Component* -- keine strukturellen Freiheitsgrade; definiert durch Name und
   Version; identifizierbar als `antora.yml` + `modules/`-Verzeichnis.
 * *Project* -- künstlich, nicht Teil der Antora-Spezifikation; definiert über
-  ein Verzeichnis mit gültiger `antora.toml`; referenziert exakt ein Playbook.
+  ein Verzeichnis mit gültiger `antora-cli.toml`; referenziert exakt ein Playbook.
 * *Playbook* -- "Glue" zwischen Project und Components; wird zuletzt erstellt,
   da es selbst nichts definiert, sondern auf den Gegebenheiten aufsetzt.
 
@@ -163,8 +163,8 @@ im Projektverzeichnis (Default `docs`), Component-Version (Default `~`).
 
 * Projektverzeichnis muss existieren oder erstellbar sein (aktuelles Verzeichnis
   und leeres Verzeichnis sind zulässig).
-* Bestehende `antora.toml` im Projektverzeichnis -> Abbruch.
-* Gültige (parsbare) `antora-secrets.toml` wird beibehalten, Fortsetzung.
+* Bestehende `antora-cli.toml` im Projektverzeichnis -> Abbruch.
+* Gültige (parsbare) `antora-cli-secrets.toml` wird beibehalten, Fortsetzung.
 * Component unter der `content-source-root`, die exakt der zu erzeugenden
   entspricht -> Konfliktabbruch.
 * Bestehendes Playbook mit Default-Namen -> Konfliktabbruch (Hinweis auf
@@ -339,7 +339,7 @@ Default-Image im Quelltext.
 *Maßnahmen:*
 
 * Confluence-Defaults externalisieren oder als optionalen Profil-Mechanismus.
-* Default-Image und -Tag konfigurierbar machen (über `antora.toml` bereits
+* Default-Image und -Tag konfigurierbar machen (über `antora-cli.toml` bereits
   möglich, dokumentieren).
 * Build-URL-Extraktion robuster machen (statt Regex Antora-Output-Format
   nutzen oder versionsspezifische Patterns).

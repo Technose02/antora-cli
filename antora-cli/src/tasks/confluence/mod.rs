@@ -109,7 +109,7 @@ pub fn run(
         exit(1);
     };
 
-    // read antora-secrets-file if possible, fallback to defaults otherwise
+    // read antora-cli-secrets-file if possible, fallback to defaults otherwise
     let antora_secrets = match try_read_antora_secrets(&dir) {
         Some(Ok(antora_config)) => antora_config,
         None => {
