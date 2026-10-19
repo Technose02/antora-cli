@@ -10,8 +10,8 @@ pub use confluence::run as run_confluence;
 pub use site::run as run_site;
 
 pub use structurizr::{
-    STRUCTURIZR_CONTAINER_PORT, run_export_views as run_export_structurizr_views,
-    run_local as run_structurizr_local,
+    DEFAULT_STRUCTURIZR_HOST_PORT, STRUCTURIZR_CONTAINER_PORT,
+    run_export_views as run_export_structurizr_views, run_local as run_structurizr_local,
 };
 
 #[derive(Debug, Default, Clone)]

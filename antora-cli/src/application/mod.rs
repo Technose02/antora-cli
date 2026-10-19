@@ -104,13 +104,13 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
             StructurizrCommands::Local { host_port } => run_structurizr_local(
                 project_dir,
                 template_resolver.default_image_config(),
-                *host_port,
+                Some(*host_port),
                 container_cleanup_command_target,
             ),
             StructurizrCommands::ExportViews { format } => run_export_structurizr_views(
                 project_dir,
                 template_resolver.default_image_config(),
-                format.as_ref(),
+                Some(format),
                 container_cleanup_command_target,
             ),
         },

@@ -21,7 +21,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-const DEFAULT_STRUCTURIZR_HOST_PORT: u16 = 8080;
+pub const DEFAULT_STRUCTURIZR_HOST_PORT: u16 = 8080;
 pub const STRUCTURIZR_CONTAINER_PORT: u16 = 8080;
 
 pub fn run_export_views(

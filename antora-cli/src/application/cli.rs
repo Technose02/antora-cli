@@ -1,4 +1,4 @@
-use crate::tasks::{AntoraLogLevel, ExportFormat};
+use crate::tasks::{AntoraLogLevel, DEFAULT_STRUCTURIZR_HOST_PORT, ExportFormat};
 use clap::{Args, Subcommand};
 
 #[derive(Debug, Args)]
@@ -109,12 +109,12 @@ pub enum CliCommands {
 pub enum StructurizrCommands {
     #[command(about = "runs a local structurizr instance", long_about=None)]
     Local {
-        #[arg(short = 'p', long, value_name = "HOST_PORT")]
-        host_port: Option<u16>,
+        #[arg(short = 'p', long, value_name = "HOST_PORT", default_value_t = DEFAULT_STRUCTURIZR_HOST_PORT)]
+        host_port: u16,
     },
     #[command(about = "exports views from a given workspace using playwright", long_about = None)]
     ExportViews {
-        #[arg(short = 'f', long, value_name = "FORMAT")]
-        format: Option<ExportFormat>,
+        #[arg(short = 'f', long, value_name = "FORMAT", default_value_t = ExportFormat::Svg)]
+        format: ExportFormat,
     },
 }
