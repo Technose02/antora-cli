@@ -106,7 +106,7 @@ where
 
 pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) -> ProcessBuilder {
     let c4_model_dir = "c4-model";
-    let c4_model_path = format!("antora/{c4_model_dir}");
+    let c4_model_path = format!("/antora/{c4_model_dir}");
     let exported_views_path = format!("{c4_model_path}/exported_views");
     let workspace_dsl_path = format!("{c4_model_path}/workspace.dsl");
     let workspace_json_file = "workspace.json";
