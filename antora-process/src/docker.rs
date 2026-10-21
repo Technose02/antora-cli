@@ -88,6 +88,9 @@ where
 }
 
 pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) -> ProcessBuilder {
+    let workspace_json = "/antora/c4-model/workspace.json";
+    let workspace_dsl = "/antora/c4-model/workspace.dsl";
+
     let mut pb = ProcessBuilder::new();
     pb.in_dir(dir).with_arg("run");
     pb.with_arg("--rm");
@@ -95,7 +98,13 @@ pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) 
     pb.with_args(["-tv", ".:/antora:Z", image_tag, "structurizr"]);
 
     pb.with_arg("export");
-    pb.with_arg("-w").with_arg("/antora/c4-model/workspace.dsl");
+
+    if AsRef::<Path>::as_ref(workspace_json).is_file() {
+        pb.with_arg("-w").with_arg(workspace_json);
+    } else {
+        pb.with_arg("-w").with_arg(workspace_dsl);
+    }
+
     pb.with_arg("-f").with_arg(export_format);
     pb.with_arg("-o")
         .with_arg("/antora/c4-model/exported_views");
