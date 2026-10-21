@@ -88,8 +88,19 @@ where
 }
 
 pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) -> ProcessBuilder {
-    let workspace_json = "/antora/c4-model/workspace.json";
-    let workspace_dsl = "/antora/c4-model/workspace.dsl";
+    let c4_model_dir = "c4-model";
+    let c4_model_path = format!("antora/{c4_model_dir}");
+    let exported_views_path = format!("{c4_model_path}/exported_views");
+    let workspace_dsl_path = format!("{c4_model_path}/workspace.dsl");
+    let workspace_json_file = "workspace.json";
+    let workspace_json_path = format!("{c4_model_path}/{workspace_json_file}");
+
+    let workspace_json_locally = {
+        let mut p = dir.to_path_buf();
+        p.push(c4_model_dir);
+        p.push(workspace_json_file);
+        p
+    };
 
     let mut pb = ProcessBuilder::new();
     pb.in_dir(dir).with_arg("run");
@@ -99,15 +110,17 @@ pub fn run_structurizr_export(dir: &Path, image_tag: &str, export_format: &str) 
 
     pb.with_arg("export");
 
-    if AsRef::<Path>::as_ref(workspace_json).is_file() {
-        pb.with_arg("-w").with_arg(workspace_json);
+    if workspace_json_locally.is_file() {
+        pb.with_arg("-w").with_arg(workspace_json_path);
     } else {
-        pb.with_arg("-w").with_arg(workspace_dsl);
+        println!(
+            "warning: '{workspace_json_locally:#?}' not found; falling back to DSL, so explicit layout-information will not be considered!"
+        );
+        pb.with_arg("-w").with_arg(workspace_dsl_path);
     }
 
     pb.with_arg("-f").with_arg(export_format);
-    pb.with_arg("-o")
-        .with_arg("/antora/c4-model/exported_views");
+    pb.with_arg("-o").with_arg(exported_views_path);
 
     pb
 }
