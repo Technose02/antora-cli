@@ -107,6 +107,18 @@ impl ResourceId {
         self.module_name.as_ref()
     }
 
+    pub fn component(&self) -> Option<&ComponentName> {
+        self.component_name.as_ref()
+    }
+
+    pub fn component_version(&self) -> &ComponentVersion {
+        &self.component_version
+    }
+
+    pub fn family(&self) -> Option<&Families> {
+        self.family.as_ref()
+    }
+
     pub fn relative_file(&self) -> &RelativeFile {
         &self.relative_file
     }
