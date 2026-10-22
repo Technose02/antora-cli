@@ -179,7 +179,7 @@ impl TutorialTemplate {
                 use component_version_descriptor::extension_config::collector_extension::CollectorConfigArrayBuilder;
 
                 component_version_descriptor::extension_config::ExtensionConfig::default()
-                    .collector(
+                    .with_collector(
                         CollectorConfigArrayBuilder::default()
                             .scan(
                                 ScanValueArrayBuilder::default()

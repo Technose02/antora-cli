@@ -15,14 +15,22 @@ pub struct ExtensionConfig {
 
 #[allow(unused)]
 impl ExtensionConfig {
-    pub fn collector(mut self, collector: impl Into<CollectorExtensionConfig>) -> Self {
+    pub fn with_collector(mut self, collector: impl Into<CollectorExtensionConfig>) -> Self {
         self.collector = Some(collector.into());
         self
     }
 
-    pub fn assembler(mut self, assembler: impl Into<AssemblerExtensionConfig>) -> Self {
+    pub fn with_assembler(mut self, assembler: impl Into<AssemblerExtensionConfig>) -> Self {
         self.assembler = Some(assembler.into());
         self
+    }
+
+    pub fn collector(&self) -> Option<&CollectorExtensionConfig> {
+        self.collector.as_ref()
+    }
+
+    pub fn assembler(&self) -> Option<&AssemblerExtensionConfig> {
+        self.assembler.as_ref()
     }
 }
 
@@ -60,7 +68,7 @@ mod tests {
         };
         let clean_val_3: CleanValue = CleanValueMap::new(String::from("build-foo")).into();
 
-        let config1 = ExtensionConfig::default().collector(
+        let config1 = ExtensionConfig::default().with_collector(
             CollectorConfigArrayBuilder::default()
                 .clean(clean_val_1.clone())
                 .clean(clean_val_2.clone())
@@ -69,21 +77,21 @@ mod tests {
                 .build(),
         );
 
-        let config2 = ExtensionConfig::default().collector(
+        let config2 = ExtensionConfig::default().with_collector(
             CollectorConfigMapBuilder::default()
                 .clean(clean_val_1)
                 .run(RunValue::String("irrelevant".into()))
                 .build(),
         );
 
-        let config3 = ExtensionConfig::default().collector(
+        let config3 = ExtensionConfig::default().with_collector(
             CollectorConfigMapBuilder::default()
                 .clean(clean_val_2)
                 .run(RunValue::String("irrelevant".into()))
                 .build(),
         );
 
-        let config4 = ExtensionConfig::default().collector(
+        let config4 = ExtensionConfig::default().with_collector(
             CollectorConfigMapBuilder::default()
                 .clean(clean_val_3)
                 .run(RunValue::String("irrelevant".into()))
@@ -113,7 +121,7 @@ mod tests {
             RunValue::from(v)
         };
 
-        let config1 = ExtensionConfig::default().collector(
+        let config1 = ExtensionConfig::default().with_collector(
             CollectorConfigArrayBuilder::default()
                 .clean(CleanValue::String("irrelevant".into()))
                 .run(run_val_1.clone())
@@ -121,7 +129,7 @@ mod tests {
                 .build(),
         );
 
-        let config2 = ExtensionConfig::default().collector(
+        let config2 = ExtensionConfig::default().with_collector(
             CollectorConfigMapBuilder::default()
                 .clean(CleanValue::String("irrelevant".into()))
                 .run(run_val_1)
@@ -146,14 +154,14 @@ mod tests {
             ScanValue::from(v)
         };
 
-        let config1 = ExtensionConfig::default().collector(
+        let config1 = ExtensionConfig::default().with_collector(
             CollectorConfigArrayBuilder::default()
                 .scan(scan_val_1.clone())
                 .scan(scan_val_2.clone())
                 .build(),
         );
 
-        let config2 = ExtensionConfig::default().collector(
+        let config2 = ExtensionConfig::default().with_collector(
             CollectorConfigMapBuilder::default()
                 .scan(scan_val_2)
                 .build(),
@@ -165,7 +173,7 @@ mod tests {
 
     #[test]
     fn structurizr_template_test() {
-        let config = ExtensionConfig::default().collector(
+        let config = ExtensionConfig::default().with_collector(
              CollectorConfigArrayBuilder::default()
             .clean("doc/modules/ROOT/attachments")
             .run(RunValueArrayBuilder::default()
@@ -194,7 +202,7 @@ mod tests {
     #[test]
     fn assembler_extension_serializes() {
         let aec = AssemblerExtensionConfig::default().with_nav("modules/arc42/nav.adoc");
-        let assembler_extension = ExtensionConfig::default().assembler(aec);
+        let assembler_extension = ExtensionConfig::default().with_assembler(aec);
         assert_eq!(
             r#"assembler:
   nav: modules/arc42/nav.adoc
