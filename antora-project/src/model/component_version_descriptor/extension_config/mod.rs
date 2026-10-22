@@ -193,8 +193,7 @@ mod tests {
 
     #[test]
     fn assembler_extension_serializes() {
-        let mut aec = AssemblerExtensionConfig::default();
-        aec.with_nav("modules/arc42/nav.adoc");
+        let aec = AssemblerExtensionConfig::default().with_nav("modules/arc42/nav.adoc");
         let assembler_extension = ExtensionConfig::default().assembler(aec);
         assert_eq!(
             r#"assembler:

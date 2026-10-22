@@ -6,7 +6,7 @@ pub struct AssemblerExtensionConfig {
 }
 
 impl AssemblerExtensionConfig {
-    pub fn with_nav(&mut self, nav: impl Into<String>) -> &mut Self {
+    pub fn with_nav(mut self, nav: impl Into<String>) -> Self {
         self.nav = Some(nav.into());
         self
     }
