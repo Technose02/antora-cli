@@ -86,6 +86,10 @@ impl ComponentVersionDescriptor {
     pub fn version(&self) -> &ComponentVersion {
         &self.version
     }
+
+    pub fn ext(&self) -> Option<&ExtensionConfig> {
+        self.ext.as_ref()
+    }
 }
 
 impl ComponentVersionDescriptor {
