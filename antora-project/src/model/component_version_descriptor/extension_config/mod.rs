@@ -1,11 +1,15 @@
 use serde::{Deserialize, Serialize};
 
+pub mod assembler_extension;
+use assembler_extension::AssemblerExtensionConfig;
 pub mod collector_extension;
-
 use collector_extension::CollectorExtensionConfig;
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct ExtensionConfig {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    assembler: Option<AssemblerExtensionConfig>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     collector: Option<CollectorExtensionConfig>,
 }
 
@@ -13,6 +17,11 @@ pub struct ExtensionConfig {
 impl ExtensionConfig {
     pub fn collector(mut self, collector: impl Into<CollectorExtensionConfig>) -> Self {
         self.collector = Some(collector.into());
+        self
+    }
+
+    pub fn assembler(mut self, assembler: impl Into<AssemblerExtensionConfig>) -> Self {
+        self.assembler = Some(assembler.into());
         self
     }
 }
@@ -180,5 +189,36 @@ mod tests {
     );
 
         print_and_try_deserialize_extension_config!(&config);
+    }
+
+    #[test]
+    fn assembler_extension_serializes() {
+        let mut aec = AssemblerExtensionConfig::default();
+        aec.with_nav("modules/arc42/nav.adoc");
+        let assembler_extension = ExtensionConfig::default().assembler(aec);
+        assert_eq!(
+            r#"assembler:
+  nav: modules/arc42/nav.adoc
+"#
+            .to_string(),
+            serde_yaml_bw::to_string(&assembler_extension).unwrap()
+        )
+    }
+
+    #[test]
+    fn assembler_extension_deserializes() {
+        let nav = String::from("modules/arc42/nav.adoc");
+
+        let assembler_extension_de = serde_yaml_bw::from_str::<ExtensionConfig>(&format!(
+            r#"assembler:
+  nav: {nav}
+"#
+        ))
+        .unwrap();
+
+        assert_eq!(
+            assembler_extension_de.assembler.unwrap().nav().unwrap(),
+            &nav
+        )
     }
 }
