@@ -201,11 +201,12 @@ mod tests {
 
     #[test]
     fn assembler_extension_serializes() {
-        let aec = AssemblerExtensionConfig::default().with_nav("modules/arc42/nav.adoc");
+        let aec = AssemblerExtensionConfig::default().with_nav_entry("modules/arc42/nav.adoc");
         let assembler_extension = ExtensionConfig::default().with_assembler(aec);
         assert_eq!(
             r#"assembler:
-  nav: modules/arc42/nav.adoc
+  nav:
+  - modules/arc42/nav.adoc
 "#
             .to_string(),
             serde_yaml_bw::to_string(&assembler_extension).unwrap()
@@ -218,13 +219,19 @@ mod tests {
 
         let assembler_extension_de = serde_yaml_bw::from_str::<ExtensionConfig>(&format!(
             r#"assembler:
-  nav: {nav}
+  nav:
+  - {nav}
 "#
         ))
         .unwrap();
 
         assert_eq!(
-            assembler_extension_de.assembler.unwrap().nav().unwrap(),
+            assembler_extension_de
+                .assembler
+                .unwrap()
+                .nav()
+                .first()
+                .unwrap(),
             &nav
         )
     }
