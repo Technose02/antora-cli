@@ -81,6 +81,22 @@ impl ComponentVersionDescriptor {
         self
     }
 
+    pub fn with_asciidoc_attributes(&mut self, attributes: HashMap<String, String>) -> &mut Self {
+        self.asciidoc = Asciidoc { attributes };
+        self
+    }
+
+    pub fn with_asciidoc_attribute(
+        &mut self,
+        attribute: impl Into<String>,
+        value: impl Into<String>,
+    ) -> &mut Self {
+        self.asciidoc
+            .attributes
+            .insert(attribute.into(), value.into());
+        self
+    }
+
     // getter
 
     pub fn version(&self) -> &ComponentVersion {
@@ -89,6 +105,14 @@ impl ComponentVersionDescriptor {
 
     pub fn ext(&self) -> Option<&ExtensionConfig> {
         self.ext.as_ref()
+    }
+
+    pub fn asciidoc_attributes(&self) -> &HashMap<String, String> {
+        &self.asciidoc.attributes
+    }
+
+    pub fn asciidoc_attribute_value(&self, attribute: &str) -> Option<&String> {
+        self.asciidoc.attributes.get(attribute)
     }
 }
 
@@ -108,135 +132,150 @@ impl Display for ComponentVersionDescriptor {
     }
 }
 
-// todo: these tests...
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn name_deserializes_and_serializes() {
-        let mut acs = ComponentVersionDescriptor::basic("my-name");
+    fn set_asciidoc_attributes_on_component_version_descriptor_works() {
+        let mut cvd =
+            ComponentVersionDescriptor::basic(String::from("test-component").try_into().unwrap());
+        cvd.with_asciidoc_attribute("foo", "bar");
+        let s = serde_yaml_bw::to_string(&cvd).unwrap();
+        assert!(s.contains(r#"asciidoc:"#));
+        assert!(s.contains(r#"attributes"#));
+        assert!(s.contains(r#"foo: bar"#));
 
-        assert!(acs.name == "my-name");
-        let serialized = acs.to_str().unwrap();
-        assert!(serialized.contains("name: my-name"));
-
-        acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
-        assert!(acs.name == "my-name");
+        let parsed = serde_yaml_bw::from_str::<ComponentVersionDescriptor>(&s).unwrap();
+        assert_eq!(parsed.asciidoc_attribute_value("foo").unwrap(), "bar");
     }
 
-    #[test]
-    fn version_deserializes_and_serializes() {
-        let mut acs = ComponentVersionDescriptor::basic("my-name");
+    // todo: these tests...
+    /*
 
-        assert!(acs.version.as_ref() == "~");
-        let serialized = acs.to_str().unwrap();
-        assert!(serialized.contains("version: ~"));
+        #[test]
+        fn name_deserializes_and_serializes() {
+            let mut acs = ComponentVersionDescriptor::basic("my-name");
 
-        acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
-        assert!(acs.version.as_ref() == "~");
+            assert!(acs.name == "my-name");
+            let serialized = acs.to_str().unwrap();
+            assert!(serialized.contains("name: my-name"));
 
-        acs.version = "v0.1.0".into();
-        assert!(acs.version.as_ref() == "v0.1.0");
-        let serialized = acs.to_str().unwrap();
-        assert!(serialized.contains("version: v0.1.0"));
-
-        acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
-        assert!(acs.version.as_ref() == "v0.1.0");
-    }
-
-    #[test]
-    fn title_deserializes_and_serializes() {
-        let mut acs = ComponentVersionDescriptor::basic("my-name");
-        assert!(acs.title.is_none());
-        let serialized = acs.to_str().unwrap();
-        assert!(!serialized.contains("title:"));
-
-        acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
-        assert!(acs.title.is_none());
-
-        acs.title = Some("titel".into());
-        let serialized = acs.to_str().unwrap();
-        assert!(serialized.contains("title: titel"));
-
-        acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
-        if let Some(s) = acs.title {
-            assert!(s == "titel")
-        } else {
-            assert!(false)
+            acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
+            assert!(acs.name == "my-name");
         }
-    }
 
-    #[test]
-    fn start_page_deserializes_and_serializes() {
-        let mut acs = AntoraContentSource::basic("my-name");
-        assert!(acs.start_page.is_none());
-        let serialized = acs.to_str().unwrap();
-        assert!(!serialized.contains("start_page:"));
+        #[test]
+        fn version_deserializes_and_serializes() {
+            let mut acs = ComponentVersionDescriptor::basic("my-name");
 
-        acs = AntoraContentSource::from_str(&serialized).unwrap();
-        assert!(acs.start_page.is_none());
+            assert!(acs.version.as_ref() == "~");
+            let serialized = acs.to_str().unwrap();
+            assert!(serialized.contains("version: ~"));
 
-        acs.start_page = Some("Startseite".into());
-        let serialized = acs.to_str().unwrap();
-        assert!(serialized.contains("start_page: Startseite"));
+            acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
+            assert!(acs.version.as_ref() == "~");
 
-        acs = AntoraContentSource::from_str(&serialized).unwrap();
-        if let Some(s) = acs.start_page {
-            assert!(s == "Startseite")
-        } else {
-            assert!(false)
+            acs.version = "v0.1.0".into();
+            assert!(acs.version.as_ref() == "v0.1.0");
+            let serialized = acs.to_str().unwrap();
+            assert!(serialized.contains("version: v0.1.0"));
+
+            acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
+            assert!(acs.version.as_ref() == "v0.1.0");
         }
-    }
 
-    #[test]
-    fn nav_deserializes_and_serializes() {
-        let mut acs = AntoraContentSource::basic("my-name");
-        assert!(acs.nav.is_empty());
-        let serialized = acs.to_str().unwrap();
-        assert!(!serialized.contains("nav:"));
+        #[test]
+        fn title_deserializes_and_serializes() {
+            let mut acs = ComponentVersionDescriptor::basic("my-name");
+            assert!(acs.title.is_none());
+            let serialized = acs.to_str().unwrap();
+            assert!(!serialized.contains("title:"));
 
-        acs = AntoraContentSource::from_str(&serialized).unwrap();
-        assert!(acs.nav.is_empty());
+            acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
+            assert!(acs.title.is_none());
 
-        acs.nav.push("modules/ROOT/nav.adoc".into());
-        let serialized = acs.to_str().unwrap();
-        assert!(serialized.contains("nav:"));
-        assert!(serialized.contains("- modules/ROOT/nav.adoc"));
+            acs.title = Some("titel".into());
+            let serialized = acs.to_str().unwrap();
+            assert!(serialized.contains("title: titel"));
 
-        acs = AntoraContentSource::from_str(&serialized).unwrap();
-        if let Some(n0) = acs.nav.iter().next() {
-            assert!(n0 == "modules/ROOT/nav.adoc")
-        } else {
-            assert!(false)
+            acs = ComponentVersionDescriptor::from_str(&serialized).unwrap();
+            if let Some(s) = acs.title {
+                assert!(s == "titel")
+            } else {
+                assert!(false)
+            }
         }
-    }
 
-    #[test]
-    fn asciidoc_deserializes_and_serializes() {
-        let mut acs: AntoraContentSource = AntoraContentSource::basic("my-name");
-        let serialized = acs.to_str().unwrap();
-        assert!(!serialized.contains("asciidoc:"));
+        #[test]
+        fn start_page_deserializes_and_serializes() {
+            let mut acs = AntoraContentSource::basic("my-name");
+            assert!(acs.start_page.is_none());
+            let serialized = acs.to_str().unwrap();
+            assert!(!serialized.contains("start_page:"));
 
-        acs = AntoraContentSource::from_str(&serialized).unwrap();
-        assert!(acs.asciidoc.is_empty());
+            acs = AntoraContentSource::from_str(&serialized).unwrap();
+            assert!(acs.start_page.is_none());
 
-        acs.asciidoc
-            .attributes
-            .insert("testkey".into(), "testvalue".into());
-        let serialized = acs.to_str().unwrap();
-        assert!(serialized.contains("asciidoc:"));
-        assert!(serialized.contains("attributes:"));
-        assert!(serialized.contains("testkey: testvalue"));
+            acs.start_page = Some("Startseite".into());
+            let serialized = acs.to_str().unwrap();
+            assert!(serialized.contains("start_page: Startseite"));
 
-        acs = AntoraContentSource::from_str(&serialized).unwrap();
-        assert!(acs.asciidoc.attributes.contains_key("testkey"));
-        if let Some(v) = acs.asciidoc.attributes.get("testkey") {
-            assert!(v == "testvalue");
-        } else {
-            assert!(false)
+            acs = AntoraContentSource::from_str(&serialized).unwrap();
+            if let Some(s) = acs.start_page {
+                assert!(s == "Startseite")
+            } else {
+                assert!(false)
+            }
         }
-    }
+
+        #[test]
+        fn nav_deserializes_and_serializes() {
+            let mut acs = AntoraContentSource::basic("my-name");
+            assert!(acs.nav.is_empty());
+            let serialized = acs.to_str().unwrap();
+            assert!(!serialized.contains("nav:"));
+
+            acs = AntoraContentSource::from_str(&serialized).unwrap();
+            assert!(acs.nav.is_empty());
+
+            acs.nav.push("modules/ROOT/nav.adoc".into());
+            let serialized = acs.to_str().unwrap();
+            assert!(serialized.contains("nav:"));
+            assert!(serialized.contains("- modules/ROOT/nav.adoc"));
+
+            acs = AntoraContentSource::from_str(&serialized).unwrap();
+            if let Some(n0) = acs.nav.iter().next() {
+                assert!(n0 == "modules/ROOT/nav.adoc")
+            } else {
+                assert!(false)
+            }
+        }
+
+        #[test]
+        fn asciidoc_deserializes_and_serializes() {
+            let mut acs: AntoraContentSource = AntoraContentSource::basic("my-name");
+            let serialized = acs.to_str().unwrap();
+            assert!(!serialized.contains("asciidoc:"));
+
+            acs = AntoraContentSource::from_str(&serialized).unwrap();
+            assert!(acs.asciidoc.is_empty());
+
+            acs.asciidoc
+                .attributes
+                .insert("testkey".into(), "testvalue".into());
+            let serialized = acs.to_str().unwrap();
+            assert!(serialized.contains("asciidoc:"));
+            assert!(serialized.contains("attributes:"));
+            assert!(serialized.contains("testkey: testvalue"));
+
+            acs = AntoraContentSource::from_str(&serialized).unwrap();
+            assert!(acs.asciidoc.attributes.contains_key("testkey"));
+            if let Some(v) = acs.asciidoc.attributes.get("testkey") {
+                assert!(v == "testvalue");
+            } else {
+                assert!(false)
+            }
+        }
+    */
 }
-*/
