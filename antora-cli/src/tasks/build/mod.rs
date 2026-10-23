@@ -24,7 +24,7 @@ use std::{
     sync::{Arc, LazyLock, Mutex},
 };
 
-use super::{SiteArgs, get_antora_cache_dir};
+use super::{BuildArgs, get_antora_cache_dir};
 
 static OPEN_SITE_EXTRACTOR_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"Open file:\/\/(.*) in a browser to view your site\.")
@@ -93,8 +93,8 @@ pub fn validate_playbook_filename(
     }
 }
 
-pub fn run(site_args: SiteArgs, container_cleanup_command_target: Arc<Mutex<Option<Command>>>) {
-    let mut dir = if let Some(dir) = site_args.project_dir {
+pub fn run(build_args: BuildArgs, container_cleanup_command_target: Arc<Mutex<Option<Command>>>) {
+    let mut dir = if let Some(dir) = build_args.project_dir {
         PathBuf::from(dir)
     } else {
         PathBuf::from(".")
@@ -111,14 +111,14 @@ pub fn run(site_args: SiteArgs, container_cleanup_command_target: Arc<Mutex<Opti
             println!("warning: no antora-config found, using defaults");
             AntoraConfiguration {
                 playbook: PlaybookConfig::default(),
-                antora_image: site_args.default_image_config,
+                antora_image: build_args.default_image_config,
                 confluence: None,
             }
         }
     };
 
     // check for playbook-override via cli-arg
-    let playbook_filename = if let Some(playbook_filename) = site_args.playbook_filename {
+    let playbook_filename = if let Some(playbook_filename) = build_args.playbook_filename {
         if let Ok(playbook_filename) = Filename::try_from(playbook_filename.to_owned()) {
             playbook_filename
         } else {
@@ -186,9 +186,9 @@ pub fn run(site_args: SiteArgs, container_cleanup_command_target: Arc<Mutex<Opti
         let mut docker_cmd = run_antora_docker(
             &dir,
             env_vars(),
-            site_args.fetch,
-            site_args.stacktrace,
-            site_args.log_level.to_string(),
+            build_args.fetch,
+            build_args.stacktrace,
+            build_args.log_level.to_string(),
             playbook_filename.as_ref(),
             &antora_config.antora_image(),
         );
@@ -203,9 +203,9 @@ pub fn run(site_args: SiteArgs, container_cleanup_command_target: Arc<Mutex<Opti
             let mut podman_cmd = run_antora_podman(
                 &dir,
                 env_vars(),
-                site_args.fetch,
-                site_args.stacktrace,
-                site_args.log_level.to_string(),
+                build_args.fetch,
+                build_args.stacktrace,
+                build_args.log_level.to_string(),
                 playbook_filename.as_ref(),
                 &antora_config.antora_image(),
             );
@@ -228,7 +228,7 @@ pub fn run(site_args: SiteArgs, container_cleanup_command_target: Arc<Mutex<Opti
         }
     };
     match res {
-        Ok((Some(stdout), _)) if site_args.open => {
+        Ok((Some(stdout), _)) if build_args.open => {
             if let Some(captures) = OPEN_SITE_EXTRACTOR_REGEX.captures(&stdout) {
                 let mut built_site_url = format!("file:///{}", &captures[1]);
                 built_site_url = built_site_url.replace("\\", "/");

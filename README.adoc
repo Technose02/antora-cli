@@ -8,7 +8,7 @@ typsichere Rust-Modelle abgebildet; Serialisierung und Persistierung sind
 Derivate dieser Modelle ("Model-First").
 
 [IMPORTANT]
-Dieses Projekt befindet sich im Aufbau. Die Kernflüsse (`init`, `site`,
+Dieses Projekt befindet sich im Aufbau. Die Kernflüsse (`init`, `build`,
 `confluence`) sind funktionsfähig; Dokumentation, Testabdeckung und
 Fehlerbehandlung sind ausbaufähig (siehe <<_roadmap>> und
 <<_refaktorierungsplan>>).
@@ -75,7 +75,7 @@ Ablauf:
 Wichtige Flags: `-n` (nicht-interaktiv), `-s` (Scaffolding-Inhalte),
 `-c`/`-t`/`-v` (Component-Name/-Titel/-Version), `-p` (PDF-Export).
 
-=== `site`
+=== `build`
 
 Baut die Site aus dem in `antora-cli.toml` referenzierten Playbook mittels des
 Antora-Container-Images.
@@ -95,7 +95,7 @@ Veröffentlicht die Site als Confluence-Seiten via Antora-Confluence-Image.
 
 Ablauf:
 
-. Wie `site`, zusätzlich: Lesen der `confluence`-Sektion aus `antora-cli.toml`
+. Wie `build`, zusätzlich: Lesen der `confluence`-Sektion aus `antora-cli.toml`
   (Default-Anlage mit Hinweis bei Fehlen).
 . Imperative Generierung eines temporären `confluence-publish.xml` (Maven-POM)
   aus `ConfluenceConfig` + Asciidoc-Attributen.
@@ -224,8 +224,8 @@ cargo build --release
 # Initialisieren (nicht-interaktiv, CI-tauglich)
 ./target/release/antora-cli init -n -c meine-comp -t "Meine Komponente"
 
-# Site bauen und öffnen
-./target-release/antora-cli site -o
+# Antora-Targets bauen und Microsite öffnen
+./target-release/antora-cli build -o
 
 # Nach Confluence veröffentlichen
 ./target/release/antora-cli confluence
@@ -349,7 +349,7 @@ Kontext hinaus.
 
 === Epic 6: `manage`-Befehl
 
-*Problem:* Nur `init`/`site`/`confluence`; Nachführen bestehender Projekte
+*Problem:* Nur `init`/`build`/`confluence`; Nachführen bestehender Projekte
 erfolgt manuell.
 
 *Maßnahmen:*
@@ -367,5 +367,5 @@ erfolgt manuell.
 
 * Workspace: 5 Crates, Edition 2024, Resolver 3.
 * `antora-cli`: 0.7.0.
-* Funktionsfähig: `init`, `site`, `confluence`.
+* Funktionsfähig: `init`, `build`, `confluence`.
 * Offen: Tests, `manage`, erweiterte Templates, Veröffentlichungspfad.

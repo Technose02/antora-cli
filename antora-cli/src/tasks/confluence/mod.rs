@@ -22,7 +22,7 @@ use std::{
 
 use crate::tasks::confluence::pom_xml_template::CONFLUENCE_PAT_ENV_VARIABLE;
 
-use super::site::{
+use super::build::{
     try_read_antora_configuration, try_read_antora_secrets, validate_playbook_filename,
 };
 use super::{ConfluenceArgs, get_antora_cache_dir};

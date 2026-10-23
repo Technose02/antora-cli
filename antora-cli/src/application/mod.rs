@@ -7,7 +7,7 @@ use std::{
 use crate::{
     application::cli::StructurizrCommands,
     tasks::{
-        ConfluenceArgs, SiteArgs, run_confluence, run_export_structurizr_views, run_site,
+        BuildArgs, ConfluenceArgs, run_build, run_confluence, run_export_structurizr_views,
         run_structurizr_local,
     },
 };
@@ -66,14 +66,14 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
             },
             template_resolver,
         ),
-        CliCommands::Site {
+        CliCommands::Build {
             playbook,
             fetch,
             stacktrace,
             log_level,
             open,
-        } => run_site(
-            SiteArgs {
+        } => run_build(
+            BuildArgs {
                 project_dir,
                 playbook_filename: playbook.as_ref(),
                 fetch: *fetch,

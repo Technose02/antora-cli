@@ -54,10 +54,10 @@ pub enum CliCommands {
         export_pdf: bool,
     },
 
-    /// builds the site defined in the playbook using antora (currently by running a container of the provided antora_image).
-    #[command(about = "builds the site defined in the playbook using antora", long_about = None)]
-    Site {
-        /// the playbook to build the site from (default: 'antora-playbook.yml')
+    /// builds the targets defined in the project using antora (currently by running a container of the provided antora_image).
+    #[command(about = "builds the targets defined in the project using antora", long_about = None)]
+    Build {
+        /// the playbook orchestrating the antora-components to build (default: 'antora-playbook.yml')
         #[arg(short = 'p', long, value_name = "PLAYBOOK")]
         playbook: Option<String>,
 
@@ -73,13 +73,13 @@ pub enum CliCommands {
         #[arg(short = 'l', long, value_name = "ANTORALOGLEVEL")]
         log_level: Option<AntoraLogLevel>,
 
-        /// set to open the built site in your default webbrowser (if created successfully)
+        /// set to open the built microsite (standard-target) in your default webbrowser (if created successfully)
         #[arg(short = 'o', long, value_name = "FLAG")]
         open: bool,
     },
 
-    /// publishes the site defined in the playbook as confluence page(s) using antora (currently by running a container of the provided antora_image).
-    #[command(about = "publishes the site defined in the playbook as confluence page(s)", long_about = None)]
+    /// publishes the docs orchestrated by the playbook as confluence page(s) using antora (currently by running a container of the provided antora_image).
+    #[command(about = "publishes the docs orchestrated by the playbook as confluence page(s)", long_about = None)]
     Confluence {
         /// the confluence-playbook to build the pages from (default: 'confluence-publish.yml')
         #[arg(short = 'p', long, value_name = "PLAYBOOK")]

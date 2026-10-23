@@ -1,4 +1,4 @@
-use crate::tasks::{ExportFormat, site::try_read_antora_configuration};
+use crate::tasks::{ExportFormat, build::try_read_antora_configuration};
 use antora_fs::ANTORA_CONFIGURATION;
 use antora_process::{
     Error as ProcessError,

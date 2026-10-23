@@ -2,12 +2,11 @@ use antora_fs::ANTORA_CACHE_DIR;
 use antora_project::{antora_configuration::ImageConfig, antora_playbook::AntoraPlaybook};
 use std::fmt::Display;
 
+mod build;
 mod confluence;
-//mod init;
-mod site;
 mod structurizr;
+pub use build::run as run_build;
 pub use confluence::run as run_confluence;
-pub use site::run as run_site;
 
 pub use structurizr::{
     DEFAULT_STRUCTURIZR_HOST_PORT, STRUCTURIZR_CONTAINER_PORT,
@@ -95,7 +94,7 @@ impl From<&str> for ExportFormat {
     }
 }
 
-pub struct SiteArgs<'cli> {
+pub struct BuildArgs<'cli> {
     pub(crate) project_dir: Option<&'cli String>,
     pub(crate) playbook_filename: Option<&'cli String>,
     pub(crate) fetch: bool,
