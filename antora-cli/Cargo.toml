@@ -17,4 +17,6 @@ relative-path = { path = "../relative-path" }
 init-task = { path = "../init-task" }
 init-templates = { path = "../init-templates" }
 ctrlc = "3.5.2"
+
+[target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_System_Threading"] }
