@@ -221,13 +221,13 @@ impl Template for BasicTemplate {
             start_page_id,
             self.init_assistant_results.playbook_site_title(),
             content_source_start_path,
-            pdf_target,
+            pdf_export,
             true,
         ));
 
         self.cached_component_version_descriptor = Some(component_version_descriptor);
 
-        if pdf_target {
+        if pdf_export {
             vfs.write_project_resource((
                 antora_assembler_pdf_yml::relative_file(),
                 antora_assembler_pdf_yml::content(),
