@@ -61,7 +61,7 @@ impl TutorialTemplate {
         site_start_page: ResourceId,
         site_title: &str,
         content_source_start_path: RelativeDir,
-        pdf_target: bool,
+        pdf_export: bool,
         collector_extension: bool,
     ) -> AntoraPlaybook {
         let antora_section = {
@@ -75,7 +75,7 @@ impl TutorialTemplate {
                 }
             };
 
-            if pdf_target {
+            if pdf_export {
                 let pdf_extension_builder = AntoraExtensionBuilder::new("@antora/pdf-extension")
                     .config_file(antora_assembler_pdf_yml::relative_file())
                     .build();
@@ -218,7 +218,7 @@ impl Template for TutorialTemplate {
         )
     }
 
-    fn process(&mut self, vfs: &Vfs, pdf_target: bool) {
+    fn process(&mut self, vfs: &Vfs, pdf_export: bool) {
         // create start_path for content
         let mut content_source_start_path =
             self.init_assistant_results.content_source_root().clone();

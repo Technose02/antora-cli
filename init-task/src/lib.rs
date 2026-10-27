@@ -24,7 +24,7 @@ pub struct InitArgs<'cli> {
     pub provided_component_version: Option<&'cli String>,
     pub provided_playbook_site_title: Option<&'cli String>,
     pub provided_init_template_key: Option<&'cli String>,
-    pub export_pdf: bool,
+    pub pdf_export: bool,
 }
 
 pub trait Template {
@@ -36,7 +36,7 @@ pub trait Template {
     /// - playbook-file
     /// - antora-cli.toml
     /// - antora-cli-secrets.toml
-    fn process(&mut self, vfs: &Vfs, pdf_target: bool);
+    fn process(&mut self, vfs: &Vfs, pdf_export: bool);
 
     /// returns the content to write into the .gitignore
     fn get_gitignore_content(&self) -> String;

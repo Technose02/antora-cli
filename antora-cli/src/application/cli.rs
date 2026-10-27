@@ -49,9 +49,9 @@ pub enum CliCommands {
         #[arg(short = 'k', long, value_name = "TEMPLATE-KEY")]
         init_template_key: Option<String>,
 
-        /// set to add pdf-export to your project (will add the extension to the playbook and create a default config-file)
-        #[arg(short = 'p', long, value_name = "FLAG")]
-        export_pdf: bool,
+        /// set to disable pdf-export for your project (will explicitly NOT add the extension to the playbook and NOT create a default config-file)
+        #[arg(long = "no-pdf", value_name = "FLAG")]
+        no_pdf_export: bool,
     },
 
     /// builds the targets defined in the project using antora (currently by running a container of the provided antora_image).

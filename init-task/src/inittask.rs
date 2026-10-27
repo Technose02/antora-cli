@@ -181,7 +181,7 @@ impl InitTask {
             .expect("Template must resolve from valid InitAssistantResults");
 
         // create/update files according to template
-        init_template.process(&vfs, init_args.export_pdf);
+        init_template.process(&vfs, init_args.pdf_export);
 
         // write .gitignore using content created from template
         vfs.write_gitignore(init_template.get_gitignore_content());

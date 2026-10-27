@@ -51,7 +51,7 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
             component_version,
             playbook_site_title,
             init_template_key,
-            export_pdf,
+            no_pdf_export,
         } => InitTask::run(
             InitArgs {
                 project_dir,
@@ -62,7 +62,7 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
                 provided_component_version: component_version.as_ref(),
                 provided_playbook_site_title: playbook_site_title.as_ref(),
                 provided_init_template_key: init_template_key.as_ref(),
-                export_pdf: *export_pdf,
+                pdf_export: !(*no_pdf_export),
             },
             template_resolver,
         ),
