@@ -1,4 +1,4 @@
-use antora_fs::{ANTORA_CONFIGURATION, ANTORA_SECRETS_CONFIGURATION, NormalizePath};
+use antora_fs::{ANTORA_CLI_CONFIGURATION, ANTORA_CLI_SECRETS_CONFIGURATION, NormalizePath};
 use antora_process::{
     Error as ProcessError, LineProcessor,
     docker::{DockerTool, run_antora as run_antora_docker},
@@ -10,9 +10,9 @@ use antora_process::{
 };
 use antora_project::{
     Result as ProjectResult,
-    antora_configuration::{AntoraConfiguration, PlaybookConfig},
+    antora_cli_configuration::{AntoraCliConfiguration, PlaybookConfig},
+    antora_cli_secrets::AntoraCliSecrets,
     antora_playbook::AntoraPlaybook,
-    antora_secrets::AntoraSecrets,
 };
 use regex::Regex;
 use relative_path::Filename;
@@ -31,14 +31,16 @@ static OPEN_SITE_EXTRACTOR_REGEX: LazyLock<Regex> = LazyLock::new(|| {
         .expect("static pattern for open-site must compile")
 });
 
-pub fn try_read_antora_configuration(dir: &Path) -> Option<ProjectResult<AntoraConfiguration>> {
+pub fn try_read_antora_cli_configuration(
+    dir: &Path,
+) -> Option<ProjectResult<AntoraCliConfiguration>> {
     let mut p = dir.to_owned();
-    p.push(ANTORA_CONFIGURATION);
+    p.push(ANTORA_CLI_CONFIGURATION);
     if p.exists() && p.is_file() {
         if let Ok(contents) = read_to_string(p) {
-            Some(AntoraConfiguration::try_from(contents.as_str()))
+            Some(AntoraCliConfiguration::try_from(contents.as_str()))
         } else {
-            eprintln!("found invalid {ANTORA_CONFIGURATION} file, aborting");
+            eprintln!("found invalid {ANTORA_CLI_CONFIGURATION} file, aborting");
             exit(1);
         }
     } else {
@@ -46,14 +48,14 @@ pub fn try_read_antora_configuration(dir: &Path) -> Option<ProjectResult<AntoraC
     }
 }
 
-pub fn try_read_antora_secrets(dir: &Path) -> Option<ProjectResult<AntoraSecrets>> {
+pub fn try_read_antora_cli_secrets(dir: &Path) -> Option<ProjectResult<AntoraCliSecrets>> {
     let mut p = dir.to_owned();
-    p.push(ANTORA_SECRETS_CONFIGURATION);
+    p.push(ANTORA_CLI_SECRETS_CONFIGURATION);
     if p.exists() && p.is_file() {
         if let Ok(contents) = read_to_string(p) {
-            Some(AntoraSecrets::try_from(contents.as_str()))
+            Some(AntoraCliSecrets::try_from(contents.as_str()))
         } else {
-            eprintln!("found invalid {ANTORA_SECRETS_CONFIGURATION} file, aborting");
+            eprintln!("found invalid {ANTORA_CLI_SECRETS_CONFIGURATION} file, aborting");
             exit(1);
         }
     } else {
@@ -101,15 +103,15 @@ pub fn run(build_args: BuildArgs, container_cleanup_command_target: Arc<Mutex<Op
     };
 
     // read antora-config-file if possible, fallback to defaults otherwise
-    let antora_config = match try_read_antora_configuration(&dir) {
+    let antora_config = match try_read_antora_cli_configuration(&dir) {
         Some(Ok(antora_config)) => antora_config,
         Some(Err(e)) => {
-            eprintln!("existing configuration '{ANTORA_CONFIGURATION}' is invalid!: {e}");
+            eprintln!("existing configuration '{ANTORA_CLI_CONFIGURATION}' is invalid!: {e}");
             exit(1);
         }
         None => {
             println!("warning: no antora-config found, using defaults");
-            AntoraConfiguration {
+            AntoraCliConfiguration {
                 playbook: PlaybookConfig::default(),
                 antora_image: build_args.default_image_config,
                 confluence: None,
@@ -156,16 +158,16 @@ pub fn run(build_args: BuildArgs, container_cleanup_command_target: Arc<Mutex<Op
     });
 
     // read antora-cli-secrets-file if possible, fallback to defaults otherwise
-    let antora_secrets = match try_read_antora_secrets(&dir) {
+    let antora_cli_secrets = match try_read_antora_cli_secrets(&dir) {
         Some(Ok(antora_config)) => antora_config,
         None => {
             println!(
-                "warning: no '{ANTORA_SECRETS_CONFIGURATION}' found, fetching remote repositories might fail"
+                "warning: no '{ANTORA_CLI_SECRETS_CONFIGURATION}' found, fetching remote repositories might fail"
             );
-            AntoraSecrets::default()
+            AntoraCliSecrets::default()
         }
         _ => {
-            eprintln!("existing secrets-file '{ANTORA_SECRETS_CONFIGURATION}' is invalid!");
+            eprintln!("existing secrets-file '{ANTORA_CLI_SECRETS_CONFIGURATION}' is invalid!");
             exit(1);
         }
     };
@@ -176,7 +178,7 @@ pub fn run(build_args: BuildArgs, container_cleanup_command_target: Arc<Mutex<Op
         String::from("ANTORA_CACHE_DIR"),
         get_antora_cache_dir(Some(&playbook)),
     ));
-    if let Some(git_credentials) = antora_secrets.git_credentials() {
+    if let Some(git_credentials) = antora_cli_secrets.git_credentials() {
         env_vars.push((String::from("GIT_CREDENTIALS"), git_credentials));
     }
     let env_vars = || env_vars.iter().map(|(k, v)| (k.as_str(), v.as_str()));

@@ -8,14 +8,14 @@ mod confluence_config;
 pub use confluence_config::{ConfluenceConfig, OrphanRemovalStrategy};
 
 #[derive(Serialize, Deserialize)]
-pub struct AntoraConfiguration {
+pub struct AntoraCliConfiguration {
     pub playbook: PlaybookConfig,
     pub antora_image: ImageConfig,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub confluence: Option<ConfluenceConfig>,
 }
 
-impl AntoraConfiguration {
+impl AntoraCliConfiguration {
     pub fn playbook_filename(&self) -> &Filename {
         &self.playbook.filename
     }
@@ -36,15 +36,15 @@ impl AntoraConfiguration {
     }
 }
 
-impl TryFrom<&str> for AntoraConfiguration {
+impl TryFrom<&str> for AntoraCliConfiguration {
     type Error = Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        parse_toml::<AntoraConfiguration>(value).map_err(Error::TomlDeserializationError)
+        parse_toml::<AntoraCliConfiguration>(value).map_err(Error::TomlDeserializationError)
     }
 }
 
-impl Display for AntoraConfiguration {
+impl Display for AntoraCliConfiguration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

@@ -1,4 +1,4 @@
-use antora_project::antora_configuration::ImageConfig;
+use antora_project::antora_cli_configuration::ImageConfig;
 use antora_project::component_version::ComponentVersion;
 use init_task::{InitAssistantResults, Template, TemplateResolver, TemplateResolverError};
 use init_templates::{BasicTemplate, TutorialTemplate};
@@ -83,7 +83,7 @@ impl TemplateResolver for DefaultTemplateResolver {
         self.valid_keys.as_slice()
     }
 
-    fn default_image_config(&self) -> antora_project::antora_configuration::ImageConfig {
+    fn default_image_config(&self) -> antora_project::antora_cli_configuration::ImageConfig {
         ImageConfig {
             antora_image: DEFAULT_ANTORA_IMAGE_PATH.to_owned(),
             version_tag: DEFAULT_ANTORA_IMAGE_VERSION.to_owned(),

@@ -1,5 +1,5 @@
 use crate::{
-    ANTORA_CONFIGURATION, ANTORA_SECRETS_CONFIGURATION, COMPONENT_VERSION_DESCRIPTOR,
+    ANTORA_CLI_CONFIGURATION, ANTORA_CLI_SECRETS_CONFIGURATION, COMPONENT_VERSION_DESCRIPTOR,
     ComponentHandle, Error, GITIGNORE, ProjectInitDir, Resource, ResourceFile, Result,
 };
 use antora_project::{
@@ -18,9 +18,9 @@ use std::{
 static COMPONENT_VERSION_DESCRIPTOR_FILENAME: LazyLock<Filename> =
     LazyLock::new(|| Filename::try_from(COMPONENT_VERSION_DESCRIPTOR.to_owned()).unwrap());
 static ANTORA_SECRETS_CONFIGURATION_FILENAME: LazyLock<Filename> =
-    LazyLock::new(|| Filename::try_from(ANTORA_SECRETS_CONFIGURATION.to_owned()).unwrap());
+    LazyLock::new(|| Filename::try_from(ANTORA_CLI_SECRETS_CONFIGURATION.to_owned()).unwrap());
 static ANTORA_CONFIGURATION_FILENAME: LazyLock<Filename> =
-    LazyLock::new(|| Filename::try_from(ANTORA_CONFIGURATION.to_owned()).unwrap());
+    LazyLock::new(|| Filename::try_from(ANTORA_CLI_CONFIGURATION.to_owned()).unwrap());
 static DEFAULT_PLAYBOOK_FILENAME: LazyLock<Filename> = LazyLock::new(|| {
     Filename::try_from(antora_project::DEFAULT_PLAYBOOK_FILENAME.to_owned()).unwrap()
 });
@@ -70,7 +70,7 @@ impl Vfs {
             .insert(pb, (resource_file.content().clone(), mode));
     }
 
-    pub fn write_antora_secrets_configuration(&self, contents: String) -> &Self {
+    pub fn write_antora_cli_secrets_configuration(&self, contents: String) -> &Self {
         self.write_resource(
             (
                 create_relative_file_from_filename(ANTORA_SECRETS_CONFIGURATION_FILENAME.clone()),
@@ -82,7 +82,7 @@ impl Vfs {
         self
     }
 
-    pub fn write_antora_configuration(&self, contents: String) -> &Self {
+    pub fn write_antora_cli_configuration(&self, contents: String) -> &Self {
         self.write_resource(
             (
                 create_relative_file_from_filename(ANTORA_CONFIGURATION_FILENAME.clone()),

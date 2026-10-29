@@ -1,6 +1,6 @@
-use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR, ANTORA_SECRETS_CONFIGURATION, Vfs};
+use antora_fs::{ANTORA_BUILD_DIR, ANTORA_CACHE_DIR, ANTORA_CLI_SECRETS_CONFIGURATION, Vfs};
 use antora_project::{
-    antora_configuration::{AntoraConfiguration, PlaybookConfig},
+    antora_cli_configuration::{AntoraCliConfiguration, PlaybookConfig},
     antora_playbook::{
         AntoraExtensionBuilder, AntoraPlaybook, AntoraPlaybookBuilder, AntoraSectionBuilder,
         AsciidocSectionBuilder, AttributeValue, ContentSectionBuilder, ContentSourceBuilder,
@@ -213,7 +213,7 @@ impl Template for TutorialTemplate {
 /**/.venv
 {ANTORA_CACHE_DIR}/
 {ANTORA_BUILD_DIR}/
-{ANTORA_SECRETS_CONFIGURATION}
+{ANTORA_CLI_SECRETS_CONFIGURATION}
 "#,
         )
     }
@@ -307,11 +307,11 @@ impl Template for TutorialTemplate {
         }
     }
 
-    fn get_antora_configuration(
+    fn get_antora_cli_configuration(
         &self,
         template_resolver: &dyn TemplateResolver,
-    ) -> AntoraConfiguration {
-        AntoraConfiguration {
+    ) -> AntoraCliConfiguration {
+        AntoraCliConfiguration {
             playbook: PlaybookConfig::default(),
             antora_image: template_resolver.default_image_config(),
             confluence: None,

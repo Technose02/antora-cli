@@ -1,5 +1,5 @@
 use antora_fs::ANTORA_CACHE_DIR;
-use antora_project::{antora_configuration::ImageConfig, antora_playbook::AntoraPlaybook};
+use antora_project::{antora_cli_configuration::ImageConfig, antora_playbook::AntoraPlaybook};
 use std::fmt::Display;
 
 mod build;

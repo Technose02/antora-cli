@@ -1,4 +1,4 @@
-use crate::ANTORA_CONFIGURATION;
+use crate::ANTORA_CLI_CONFIGURATION;
 use antora_project::DEFAULT_PLAYBOOK_FILENAME;
 use std::{
     fs::read_dir,
@@ -30,8 +30,8 @@ fn check_wellknown_file_exists_in_path(path: impl Into<PathBuf>, filename: &str)
     path.exists()
 }
 
-pub fn check_dir_contains_antora_configuration(path: impl Into<PathBuf>) -> bool {
-    check_wellknown_file_exists_in_path(path, ANTORA_CONFIGURATION)
+pub fn check_dir_contains_antora_cli_configuration(path: impl Into<PathBuf>) -> bool {
+    check_wellknown_file_exists_in_path(path, ANTORA_CLI_CONFIGURATION)
 }
 
 pub fn check_dir_contains_default_playbook(path: impl Into<PathBuf>) -> bool {

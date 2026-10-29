@@ -1,9 +1,9 @@
 use regex::Regex;
 use std::sync::LazyLock;
 
-pub mod antora_configuration;
+pub mod antora_cli_configuration;
+pub mod antora_cli_secrets;
 pub mod antora_playbook;
-pub mod antora_secrets;
 pub mod component_name;
 pub mod component_version;
 pub mod component_version_descriptor;

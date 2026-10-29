@@ -1,6 +1,6 @@
 use antora_fs::Vfs;
 use antora_project::{
-    antora_configuration::{AntoraConfiguration, ImageConfig},
+    antora_cli_configuration::{AntoraCliConfiguration, ImageConfig},
     antora_playbook::AntoraPlaybook,
     component_version_descriptor::{ComponentVersion, ComponentVersionDescriptor},
 };
@@ -41,11 +41,11 @@ pub trait Template {
     /// returns the content to write into the .gitignore
     fn get_gitignore_content(&self) -> String;
 
-    /// returns the structure to write as antora.yaml
-    fn get_antora_configuration(
+    /// returns the structure to write as antora-cli.toml
+    fn get_antora_cli_configuration(
         &self,
         template_resolver: &dyn TemplateResolver,
-    ) -> AntoraConfiguration;
+    ) -> AntoraCliConfiguration;
 
     /// returns the structure to write as playbook
     fn get_antora_playbook(&self) -> Option<AntoraPlaybook> {

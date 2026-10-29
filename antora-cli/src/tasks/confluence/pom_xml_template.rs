@@ -1,4 +1,4 @@
-use antora_project::{antora_configuration::ConfluenceConfig, antora_playbook::AttributeValue};
+use antora_project::{antora_cli_configuration::ConfluenceConfig, antora_playbook::AttributeValue};
 use std::collections::HashMap;
 use xml::{EmitterConfig, common::XmlVersion, writer::XmlEvent};
 

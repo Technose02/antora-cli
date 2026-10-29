@@ -5,12 +5,12 @@ use serde::{Deserialize, Serialize};
 use toml::{de::from_str as parse_toml, ser::to_string_pretty as write_toml};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
-pub struct AntoraSecrets {
+pub struct AntoraCliSecrets {
     #[serde(rename = "access-tokens")]
     access_tokens: AccessTokens,
 }
 
-impl AntoraSecrets {
+impl AntoraCliSecrets {
     pub fn git_credentials(&self) -> Option<String> {
         let gitlab_pat = &self.access_tokens.gitlab_pat;
         let gitlab_scheme = &self.access_tokens.gitlab_scheme;
@@ -55,20 +55,20 @@ impl Default for AccessTokens {
     }
 }
 
-impl TryFrom<&str> for AntoraSecrets {
+impl TryFrom<&str> for AntoraCliSecrets {
     type Error = Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        parse_toml::<AntoraSecrets>(value).map_err(Error::TomlDeserializationError)
+        parse_toml::<AntoraCliSecrets>(value).map_err(Error::TomlDeserializationError)
     }
 }
 
-impl Display for AntoraSecrets {
+impl Display for AntoraCliSecrets {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
-            write_toml(&self).expect("toml-serialization of AntoraSecrets must always work")
+            write_toml(&self).expect("toml-serialization of AntoraCliSecrets must always work")
         )
     }
 }
@@ -79,16 +79,16 @@ mod tests {
 
     #[test]
     fn secrets_de_and_ser_work() {
-        let mut antora_secrets: AntoraSecrets = AntoraSecrets::default();
+        let mut antora_cli_secrets: AntoraCliSecrets = AntoraCliSecrets::default();
         assert_eq!(
-            antora_secrets.confluence_pat(),
+            antora_cli_secrets.confluence_pat(),
             Some("<CONFLUENCE_PERSONAL_ACCESS_TOKEN>".to_owned())
         );
         assert_eq!(
-            antora_secrets.git_credentials(),
+            antora_cli_secrets.git_credentials(),
             Some("https://:<GITLAB_ACCESS_TOKEN>@<GITLAB_HOST>".to_owned())
         );
-        let mut serialized = antora_secrets.to_string();
+        let mut serialized = antora_cli_secrets.to_string();
         println!("{serialized}");
 
         assert!(serialized.contains("confluence-pat = \"<CONFLUENCE_PERSONAL_ACCESS_TOKEN>\""));
@@ -105,12 +105,12 @@ mod tests {
             "gitlab-pat = \"56789\"",
         );
 
-        antora_secrets = AntoraSecrets::try_from(serialized.as_str()).unwrap();
-        println!("{antora_secrets:#?}");
+        antora_cli_secrets = AntoraCliSecrets::try_from(serialized.as_str()).unwrap();
+        println!("{antora_cli_secrets:#?}");
 
-        assert!(antora_secrets.confluence_pat() == Some(String::from("01234")));
+        assert!(antora_cli_secrets.confluence_pat() == Some(String::from("01234")));
         assert!(
-            antora_secrets.git_credentials() == Some(String::from("https://:56789@<GITLAB_HOST>"))
+            antora_cli_secrets.git_credentials() == Some(String::from("https://:56789@<GITLAB_HOST>"))
         );
     }
 }

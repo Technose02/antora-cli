@@ -1,5 +1,5 @@
-use crate::tasks::{ExportFormat, build::try_read_antora_configuration};
-use antora_fs::ANTORA_CONFIGURATION;
+use crate::tasks::{ExportFormat, build::try_read_antora_cli_configuration};
+use antora_fs::ANTORA_CLI_CONFIGURATION;
 use antora_process::{
     Error as ProcessError,
     docker::{
@@ -14,7 +14,9 @@ use antora_process::{
     },
 };
 
-use antora_project::antora_configuration::{AntoraConfiguration, ImageConfig, PlaybookConfig};
+use antora_project::antora_cli_configuration::{
+    AntoraCliConfiguration, ImageConfig, PlaybookConfig,
+};
 use std::{
     path::PathBuf,
     process::{Command, exit},
@@ -45,15 +47,15 @@ pub fn run_export_views(
     }
 
     // read antora-config-file if possible, fallback to defaults otherwise
-    let antora_config = match try_read_antora_configuration(&dir) {
+    let antora_config = match try_read_antora_cli_configuration(&dir) {
         Some(Ok(antora_config)) => antora_config,
         Some(Err(e)) => {
-            eprintln!("existing configuration '{ANTORA_CONFIGURATION}' is invalid!: {e}");
+            eprintln!("existing configuration '{ANTORA_CLI_CONFIGURATION}' is invalid!: {e}");
             exit(1);
         }
         None => {
             println!("warning: no antora-config found, using defaults");
-            AntoraConfiguration {
+            AntoraCliConfiguration {
                 playbook: PlaybookConfig::default(),
                 antora_image: default_image_config,
                 confluence: None,
@@ -134,15 +136,15 @@ pub fn run_local(
     }
 
     // read antora-config-file if possible, fallback to defaults otherwise
-    let antora_config = match try_read_antora_configuration(&dir) {
+    let antora_config = match try_read_antora_cli_configuration(&dir) {
         Some(Ok(antora_config)) => antora_config,
         Some(Err(e)) => {
-            eprintln!("existing configuration '{ANTORA_CONFIGURATION}' is invalid!: {e}");
+            eprintln!("existing configuration '{ANTORA_CLI_CONFIGURATION}' is invalid!: {e}");
             exit(1);
         }
         None => {
             println!("warning: no antora-config found, using defaults");
-            AntoraConfiguration {
+            AntoraCliConfiguration {
                 playbook: PlaybookConfig::default(),
                 antora_image: default_image_config,
                 confluence: None,

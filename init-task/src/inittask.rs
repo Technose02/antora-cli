@@ -1,9 +1,9 @@
-use antora_fs::{Error as AntoraFsError, ProjectInitDir, Vfs, read_antora_secrets_from_dir};
+use antora_fs::{Error as AntoraFsError, ProjectInitDir, Vfs, read_antora_cli_secrets_from_dir};
 use antora_process::{
     Error as ProcessError,
     git::{RepoConstellationForPath, init_and_commit_adding_all},
 };
-use antora_project::{antora_secrets::AntoraSecrets, component_version::ComponentVersion};
+use antora_project::{antora_cli_secrets::AntoraCliSecrets, component_version::ComponentVersion};
 use relative_path::RelativeFile;
 use std::{path::Path, process::exit};
 
@@ -43,9 +43,9 @@ impl InitTask {
         project_init_dir: &ProjectInitDir,
         vfs: &Vfs,
     ) {
-        match read_antora_secrets_from_dir(project_init_dir) {
+        match read_antora_cli_secrets_from_dir(project_init_dir) {
             Ok(None) => {
-                vfs.write_antora_secrets_configuration(AntoraSecrets::default().to_string());
+                vfs.write_antora_cli_secrets_configuration(AntoraCliSecrets::default().to_string());
             }
             Err(AntoraFsError::FoundSecretsConfigurationIsInvalid) => {
                 eprintln!(
@@ -186,13 +186,13 @@ impl InitTask {
         // write .gitignore using content created from template
         vfs.write_gitignore(init_template.get_gitignore_content());
 
-        // get updated antora_configuration from template
-        let antora_configuration = init_template.get_antora_configuration(&*template_resolver);
+        // get updated antora_cli_configuration from template
+        let antora_cli_configuration = init_template.get_antora_cli_configuration(&*template_resolver);
 
-        // optionally refine antora_configuration further
+        // optionally refine antora_cli_configuration further
 
-        // write antora_configuration
-        vfs.write_antora_configuration(antora_configuration.to_string());
+        // write antora_cli_configuration
+        vfs.write_antora_cli_configuration(antora_cli_configuration.to_string());
 
         // get component_version_descriptor if template defines one
         if let Some(component_version_descriptor) = init_template.get_component_version_descriptor()
@@ -205,12 +205,12 @@ impl InitTask {
             );
         }
 
-        // write antora_playbook with filename as defined in antora_configuration
+        // write antora_playbook with filename as defined in antora_cli_configuration
         if let Some(antora_playbook) = init_template.get_antora_playbook() {
             // optionally refine antora_playbook further
 
             vfs.write_antora_playbook_as(
-                RelativeFile::from(antora_configuration.playbook_filename().clone()),
+                RelativeFile::from(antora_cli_configuration.playbook_filename().clone()),
                 antora_playbook.to_string(),
             );
         }

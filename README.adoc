@@ -31,7 +31,7 @@ Anwendung in fünf Crates:
 | Domäne
 | Typsichere Modelle: `AntoraPlaybook` (YAML via `serde_yaml_bw`),
   `AntoraConfiguration` (TOML), `ComponentVersionDescriptor` (= `antora.yml`),
-  `AntoraSecrets`, `ResourceId`, `Families`, `ComponentName`/`Version`,
+  `AntoraCliSecrets`, `ResourceId`, `Families`, `ComponentName`/`Version`,
   `ExtensionConfig`.
 
 | `antora-fs`
@@ -107,7 +107,7 @@ Ablauf:
 === Model-First
 
 Typ-Modelle sind die Source of Truth. `AntoraConfiguration`, `AntoraPlaybook`,
-`ComponentVersionDescriptor` und `AntoraSecrets` sind serde-Strukturen mit
+`ComponentVersionDescriptor` und `AntoraCliSecrets` sind serde-Strukturen mit
 Roundtrip-fähiger Serialisierung. `ResourceId` bildet den Antora-Resource-
 Identifier (`version@Component:module:family$path`) als geparsten Typ mit fünf
 Detail-Leveln (`RelativeFile` < `Module` < `ComponentName` < `ComponentVersion`)
@@ -301,7 +301,7 @@ sichere Vorschau.
 
 === Epic 3: Test-Fundament
 
-*Problem:* Nur `ResourceId`, `git`, `helpers`, `antora_secrets`,
+*Problem:* Nur `ResourceId`, `git`, `helpers`, `antora_cli_secrets`,
 `extension_config` haben Tests. Kernflüsse ungesichert.
 
 *Maßnahmen:*

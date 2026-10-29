@@ -1,7 +1,7 @@
 use crate::{
     Error,
     check::{
-        check_dir_contains_antora_configuration, check_dir_contains_default_playbook,
+        check_dir_contains_antora_cli_configuration, check_dir_contains_default_playbook,
         check_dir_is_empty_or_does_not_exist,
     },
 };
@@ -22,7 +22,7 @@ impl TryFrom<&str> for ProjectInitDir {
             return Ok(ProjectInitDir(pb));
         }
 
-        if check_dir_contains_antora_configuration(&pb) {
+        if check_dir_contains_antora_cli_configuration(&pb) {
             Err(Error::InitDirContainsAntoraConfiguration)
         } else if check_dir_contains_default_playbook(&pb) {
             Err(Error::InitDirContainsDefaultPlaybook)

@@ -1,5 +1,5 @@
-use crate::{ANTORA_SECRETS_CONFIGURATION, Error, Result};
-use antora_project::{antora_playbook::AntoraPlaybook, antora_secrets::AntoraSecrets};
+use crate::{ANTORA_CLI_SECRETS_CONFIGURATION, Error, Result};
+use antora_project::{antora_cli_secrets::AntoraCliSecrets, antora_playbook::AntoraPlaybook};
 use std::{
     fs::read_to_string,
     path::{Path, PathBuf},
@@ -9,16 +9,16 @@ use walkdir::{DirEntry, WalkDir};
 /// Reads searches and reads the file "antora-cli-secrets.toml" from the provided path.
 /// If found, it uses functionality from the antora-project-crate to parse the file into a valid Secrets-Struct.
 /// If parsing fails, the file is assumed to be invalid.
-pub fn read_antora_secrets_from_dir(dir: impl AsRef<Path>) -> Result<Option<AntoraSecrets>> {
+pub fn read_antora_cli_secrets_from_dir(dir: impl AsRef<Path>) -> Result<Option<AntoraCliSecrets>> {
     let mut pb = PathBuf::from(dir.as_ref());
-    pb.push(ANTORA_SECRETS_CONFIGURATION);
+    pb.push(ANTORA_CLI_SECRETS_CONFIGURATION);
 
     if !pb.exists() {
         Ok(None)
     } else {
         let content = read_to_string(&pb).map_err(Error::ReadingFile)?;
         Ok(Some(
-            AntoraSecrets::try_from(content.as_str())
+            AntoraCliSecrets::try_from(content.as_str())
                 .map_err(|_| Error::FoundSecretsConfigurationIsInvalid)?,
         ))
     }

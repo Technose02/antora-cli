@@ -1,4 +1,4 @@
-use antora_fs::{ANTORA_CONFIGURATION, ANTORA_SECRETS_CONFIGURATION};
+use antora_fs::{ANTORA_CLI_CONFIGURATION, ANTORA_CLI_SECRETS_CONFIGURATION};
 use antora_process::{
     Error as ProcessError,
     docker::{DockerTool, run_confluence_publish as run_confluence_publish_docker},
@@ -8,8 +8,8 @@ use antora_process::{
         start_default_machine as podman_start_default_machine,
     },
 };
-use antora_project::antora_configuration::{
-    AntoraConfiguration, ConfluenceConfig, OrphanRemovalStrategy, PlaybookConfig,
+use antora_project::antora_cli_configuration::{
+    AntoraCliConfiguration, ConfluenceConfig, OrphanRemovalStrategy, PlaybookConfig,
 };
 use relative_path::Filename;
 
@@ -23,7 +23,7 @@ use std::{
 use crate::tasks::confluence::pom_xml_template::CONFLUENCE_PAT_ENV_VARIABLE;
 
 use super::build::{
-    try_read_antora_configuration, try_read_antora_secrets, validate_playbook_filename,
+    try_read_antora_cli_configuration, try_read_antora_cli_secrets, validate_playbook_filename,
 };
 use super::{ConfluenceArgs, get_antora_cache_dir};
 
@@ -62,15 +62,15 @@ pub fn run(
     };
 
     // read antora-config-file if possible, fallback to defaults otherwise
-    let mut antora_config = match try_read_antora_configuration(&dir) {
+    let mut antora_config = match try_read_antora_cli_configuration(&dir) {
         Some(Ok(antora_config)) => antora_config,
         Some(Err(e)) => {
-            eprintln!("existing configuration '{ANTORA_CONFIGURATION}' is invalid!: {e}");
+            eprintln!("existing configuration '{ANTORA_CLI_CONFIGURATION}' is invalid!: {e}");
             exit(1);
         }
         None => {
             println!("warning: no antora-config found, using defaults");
-            AntoraConfiguration {
+            AntoraCliConfiguration {
                 playbook: PlaybookConfig::default(),
                 antora_image: confluence_args.default_image_config,
                 confluence: None,
@@ -83,7 +83,7 @@ pub fn run(
         confluence_config
     } else {
         eprint!(
-            "you have not provided a confluence-section in your {ANTORA_CONFIGURATION}. I created a default one for you which you MUST fill out manually before coming back"
+            "you have not provided a confluence-section in your {ANTORA_CLI_CONFIGURATION}. I created a default one for you which you MUST fill out manually before coming back"
         );
         antora_config.confluence = {
             let confluence_config = ConfluenceConfig {
@@ -102,24 +102,24 @@ pub fn run(
 
             Some(confluence_config)
         };
-        dir.push(ANTORA_CONFIGURATION);
+        dir.push(ANTORA_CLI_CONFIGURATION);
         if let Err(e) = fs::write(&dir, antora_config.to_string()) {
-            eprintln!("sorry, could not write to your {ANTORA_CONFIGURATION}: {e}")
+            eprintln!("sorry, could not write to your {ANTORA_CLI_CONFIGURATION}: {e}")
         }
         exit(1);
     };
 
     // read antora-cli-secrets-file if possible, fallback to defaults otherwise
-    let antora_secrets = match try_read_antora_secrets(&dir) {
+    let antora_cli_secrets = match try_read_antora_cli_secrets(&dir) {
         Some(Ok(antora_config)) => antora_config,
         None => {
             eprintln!(
-                "a confluence_pat must be provided but no '{ANTORA_SECRETS_CONFIGURATION}' was found!"
+                "a confluence_pat must be provided but no '{ANTORA_CLI_SECRETS_CONFIGURATION}' was found!"
             );
             exit(1);
         }
         _ => {
-            eprintln!("existing secrets-file '{ANTORA_SECRETS_CONFIGURATION}' is invalid!");
+            eprintln!("existing secrets-file '{ANTORA_CLI_SECRETS_CONFIGURATION}' is invalid!");
             exit(1);
         }
     };
@@ -153,10 +153,10 @@ pub fn run(
         String::from("ANTORA_CACHE_DIR"),
         get_antora_cache_dir(Some(&playbook)),
     ));
-    if let Some(git_credentials) = antora_secrets.git_credentials() {
+    if let Some(git_credentials) = antora_cli_secrets.git_credentials() {
         env_vars.push((String::from("GIT_CREDENTIALS"), git_credentials));
     }
-    if let Some(confluence_pat) = antora_secrets.confluence_pat() {
+    if let Some(confluence_pat) = antora_cli_secrets.confluence_pat() {
         env_vars.push((String::from(CONFLUENCE_PAT_ENV_VARIABLE), confluence_pat));
     }
     let env_vars = || env_vars.iter().map(|(k, v)| (k.as_str(), v.as_str()));
