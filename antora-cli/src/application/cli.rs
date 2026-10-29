@@ -101,12 +101,12 @@ pub enum CliCommands {
     #[command(about = "runs structurizr (further commands need to follow)", long_about = None)]
     Structurizr {
         #[command(subcommand)]
-        command: StructurizrCommands,
+        command: StructurizrSubCommands,
     },
 }
 
 #[derive(Debug, Subcommand)]
-pub enum StructurizrCommands {
+pub enum StructurizrSubCommands {
     #[command(about = "runs a local structurizr instance", long_about=None)]
     Local {
         #[arg(short = 'p', long, value_name = "HOST_PORT", default_value_t = DEFAULT_STRUCTURIZR_HOST_PORT)]

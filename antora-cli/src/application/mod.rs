@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    application::cli::StructurizrCommands,
+    application::cli::StructurizrSubCommands,
     tasks::{
         BuildArgs, ConfluenceArgs, run_build, run_confluence, run_export_structurizr_views,
         run_structurizr_local,
@@ -101,13 +101,13 @@ pub fn run_cli(cli_args: CliArgs, template_resolver: Box<dyn TemplateResolver>) 
             container_cleanup_command_target,
         ),
         CliCommands::Structurizr { command } => match command {
-            StructurizrCommands::Local { host_port } => run_structurizr_local(
+            StructurizrSubCommands::Local { host_port } => run_structurizr_local(
                 project_dir,
                 template_resolver.default_image_config(),
                 Some(*host_port),
                 container_cleanup_command_target,
             ),
-            StructurizrCommands::ExportViews { format } => run_export_structurizr_views(
+            StructurizrSubCommands::ExportViews { format } => run_export_structurizr_views(
                 project_dir,
                 template_resolver.default_image_config(),
                 Some(format),
